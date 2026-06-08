@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Match</title>
+
+<style>
+body{
+    margin:0;
+    background:#0b1020;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:Arial;
+    color:white;
+}
+
+h2{
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,110px);
+    gap:10px;
+}
+
+.card{
+    width:110px;
+    height:110px;
+    perspective:800px;
+    cursor:pointer;
+}
+
+.inner{
+    width:100%;
+    height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:0.5s;
+}
+
+.card.flipped .inner{
+    transform:rotateY(180deg);
+}
+
+.face{
+    position:absolute;
+    width:100%;
+    height:100%;
+    border-radius:12px;
+    backface-visibility:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+}
+
+.front{
+    background:#1f2937;
+}
+
+.back{
+    transform:rotateY(180deg);
+    background:#0f172a;
+}
+
+.back img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+</style>
+</head>
+
+<body>
+
+<div>
+<h2>Memory Match</h2>
+<div class="grid" id="grid"></div>
+</div>
+
+<script>
+
+// 🖼️ image set (free stable placeholders)
+const images = [
+"https://picsum.photos/id/237/200",
+"https://picsum.photos/id/238/200",
+"https://picsum.photos/id/239/200",
+"https://picsum.photos/id/240/200",
+"https://picsum.photos/id/241/200",
+"https://picsum.photos/id/242/200",
+"https://picsum.photos/id/243/200",
+"https://picsum.photos/id/244/200"
+];
+
+let cards = [...images, ...images]
+.sort(()=>Math.random()-0.5);
+
+let first = null;
+let lock = false;
+
+const grid = document.getElementById("grid");
+
+// CREATE CARDS
+cards.forEach(img=>{
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+        <div class="inner">
+            <div class="face front"></div>
+            <div class="face back">
+                <img src="${img}">
+            </div>
+        </div>
+    `;
+
+    card.dataset.img = img;
+
+    card.addEventListener("click",()=>flip(card));
+
+    grid.appendChild(card);
+});
+
+function flip(card){
+
+    if(lock || card.classList.contains("flipped")) return;
+
+    card.classList.add("flipped");
+
+    if(!first){
+        first = card;
+    }else{
+
+        lock = true;
+
+        if(first.dataset.img === card.dataset.img){
+            first = null;
+            lock = false;
+        }else{
+            setTimeout(()=>{
+                card.classList.remove("flipped");
+                first.classList.remove("flipped");
+                first = null;
+                lock = false;
+            },700);
+        }
+    }
+}
+</script>
+
+</body>
+</html>

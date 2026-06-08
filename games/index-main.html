@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub - Play Online Games</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+            animation: fadeIn 1s ease-in;
+        }
+
+        header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-header {
+            padding: 40px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 36px;
+            color: white;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-card:nth-child(1) .game-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .game-card:nth-child(2) .game-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .game-card:nth-child(3) .game-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .game-info {
+            padding: 25px;
+        }
+
+        .game-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .game-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .game-features {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .feature {
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .play-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            padding: 30px;
+            opacity: 0.8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 60px;
+            text-align: center;
+            color: white;
+            animation: fadeIn 1s ease-in 0.3s backwards;
+        }
+
+        .stat {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 32px;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 GameHub</h1>
+            <p>Play Amazing Games Online - Free & Mobile Friendly</p>
+        </header>
+
+        <div class="stats">
+            <div>
+                <div class="stat">3</div>
+                <div class="stat-label">GAMES</div>
+            </div>
+            <div>
+                <div class="stat">∞</div>
+                <div class="stat-label">FUN</div>
+            </div>
+            <div>
+                <div class="stat">100%</div>
+                <div class="stat-label">FREE</div>
+            </div>
+        </div>
+
+        <div class="games-grid">
+            <!-- Tic-Tac-Toe -->
+            <div class="game-card">
+                <div class="game-header">🎯</div>
+                <div class="game-info">
+                    <div class="game-title">Tic-Tac-Toe</div>
+                    <div class="game-description">
+                        Classic 2-player strategy game. Take turns marking spaces and get three in a row to win!
+                    </div>
+                    <div class="game-features">
+                        <div class="feature">2-Player</div>
+                        <div class="feature">Local</div>
+                        <div class="feature">Score Track</div>
+                    </div>
+                    <button class="play-btn" onclick="window.location.href='./index.html'">PLAY NOW</button>
+                </div>
+            </div>
+
+            <!-- Space Shooter -->
+            <div class="game-card">
+                <div class="game-header">🚀</div>
+                <div class="game-info">
+                    <div class="game-title">Space Shooter</div>
+                    <div class="game-description">
+                        Control your spaceship and destroy enemy waves. Survive as many levels as you can!
+                    </div>
+                    <div class="game-features">
+                        <div class="feature">Single Player</div>
+                        <div class="feature">Action</div>
+                        <div class="feature">Waves</div>
+                    </div>
+                    <button class="play-btn" onclick="window.location.href='./shooter.html'">PLAY NOW</button>
+                </div>
+            </div>
+
+            <!-- Battle Royale -->
+            <div class="game-card">
+                <div class="game-header">💣</div>
+                <div class="game-info">
+                    <div class="game-title">Battle Royale</div>
+                    <div class="game-description">
+                        Fight 100 AI players on a shrinking map. Loot, survive, and be the last one standing!
+                    </div>
+                    <div class="game-features">
+                        <div class="feature">PvE</div>
+                        <div class="feature">Strategy</div>
+                        <div class="feature">100 Players</div>
+                    </div>
+                    <button class="play-btn" onclick="window.location.href='./battle-royale.html'">PLAY NOW</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>🎮 GameHub © 2026 - All Games Free to Play</p>
+            <p style="font-size: 12px; margin-top: 10px;">Made with ❤️ - Enjoy!</p>
+        </footer>
+    </div>
+</body>
+</html>

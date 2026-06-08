@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Chess Game</title>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0b1020;
+    font-family:Arial;
+}
+
+#board{
+    display:grid;
+    grid-template-columns:repeat(8,60px);
+    grid-template-rows:repeat(8,60px);
+    border:3px solid #22c55e;
+}
+
+.cell{
+    width:60px;
+    height:60px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    cursor:pointer;
+}
+
+.white{background:#e5e7eb;}
+.black{background:#374151;}
+
+.selected{
+    outline:3px solid yellow;
+}
+</style>
+</head>
+
+<body>
+
+<div id="board"></div>
+
+<script>
+const board = document.getElementById("board");
+
+const pieces = {
+ r:"♜", n:"♞", b:"♝", q:"♛", k:"♚", p:"♟",
+ R:"♖", N:"♘", B:"♗", Q:"♕", K:"♔", P:"♙"
+};
+
+let state = [
+ "r","n","b","q","k","b","n","r",
+ "p","p","p","p","p","p","p","p",
+ "","","","","","","","",
+ "","","","","","","","",
+ "","","","","","","","",
+ "","","","","","","","",
+ "P","P","P","P","P","P","P","P",
+ "R","N","B","Q","K","B","N","R"
+];
+
+let selected = null;
+let turn = "white";
+
+function isWhite(p){ return p === p.toUpperCase(); }
+function isBlack(p){ return p === p.toLowerCase() && p !== ""; }
+
+function validMove(from,to,piece){
+
+    let dx = (to%8)-(from%8);
+    let dy = Math.floor(to/8)-Math.floor(from/8);
+
+    switch(piece.toLowerCase()){
+
+        case "p": // pawn
+            let dir = isWhite(piece) ? -1 : 1;
+
+            if(dx===0 && state[to]===""){
+                if(dy===dir) return true;
+            }
+
+            if(Math.abs(dx)===1 && dy===dir && state[to]!=""){
+                return true;
+            }
+            return false;
+
+        case "r":
+            return dx===0 || dy===0;
+
+        case "b":
+            return Math.abs(dx)===Math.abs(dy);
+
+        case "q":
+            return dx===0 || dy===0 || Math.abs(dx)===Math.abs(dy);
+
+        case "n":
+            return (Math.abs(dx)===2 && Math.abs(dy)===1) ||
+                   (Math.abs(dx)===1 && Math.abs(dy)===2);
+
+        case "k":
+            return Math.abs(dx)<=1 && Math.abs(dy)<=1;
+    }
+
+    return false;
+}
+
+function draw(){
+
+    board.innerHTML="";
+
+    for(let i=0;i<64;i++){
+
+        let cell = document.createElement("div");
+        cell.className="cell " + ((Math.floor(i/8)+i)%2?"black":"white");
+
+        let p = state[i];
+        cell.innerText = pieces[p] || "";
+
+        if(selected===i) cell.classList.add("selected");
+
+        cell.onclick=()=>click(i);
+
+        board.appendChild(cell);
+    }
+}
+
+function click(i){
+
+    let p = state[i];
+
+    if(selected===null){
+
+        if(p==="") return;
+
+        if(turn==="white" && !isWhite(p)) return;
+        if(turn==="black" && !isBlack(p)) return;
+
+        selected = i;
+        draw();
+        return;
+    }
+
+    if(selected===i){
+        selected=null;
+        draw();
+        return;
+    }
+
+    let piece = state[selected];
+
+    if(validMove(selected,i,piece)){
+
+        state[i] = piece;
+        state[selected] = "";
+
+        turn = (turn==="white") ? "black" : "white";
+    }
+
+    selected=null;
+    draw();
+}
+
+draw();
+</script>
+
+</body>
+</html>

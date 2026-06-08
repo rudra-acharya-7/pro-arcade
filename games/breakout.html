@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breakout Smooth</title>
+
+<style>
+body{
+    margin:0;
+    background:#0b1220;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:Arial;
+}
+
+canvas{
+    background:#0f172a;
+    border:3px solid #22c55e;
+    border-radius:10px;
+}
+
+.hud{
+    position:absolute;
+    top:15px;
+    left:15px;
+    color:white;
+    font-size:18px;
+}
+
+button{
+    margin-top:8px;
+    padding:8px 14px;
+    border:none;
+    background:#22c55e;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="hud">
+Score: <span id="score">0</span><br>
+<button onclick="restart()">Restart</button>
+</div>
+
+<canvas id="game" width="520" height="600"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let paddle, ball, bricks, score, gameOver, lives;
+let particles = [];
+
+const rows = 5;
+const cols = 8;
+const brickW = 55;
+const brickH = 20;
+const gap = 10;
+const offsetX = 30;
+const offsetY = 60;
+
+let keys = {};
+let shake = 0;
+
+document.addEventListener("keydown",e=>keys[e.key]=true);
+document.addEventListener("keyup",e=>keys[e.key]=false);
+
+function init(){
+
+    paddle = { x:210, y:560, w:100, h:12, speed:8 };
+
+    ball = { x:260, y:300, r:9, dx:4, dy:-4 };
+
+    score = 0;
+    lives = 3;
+    gameOver = false;
+
+    bricks = [];
+    for(let r=0;r<rows;r++){
+        bricks[r] = [];
+        for(let c=0;c<cols;c++){
+            bricks[r][c] = {status:1};
+        }
+    }
+
+    particles = [];
+
+    document.getElementById("score").innerText = 0;
+}
+
+// particle system
+function spawnParticles(x,y){
+    for(let i=0;i<10;i++){
+        particles.push({
+            x,y,
+            dx:(Math.random()-0.5)*4,
+            dy:(Math.random()-0.5)*4,
+            life:30
+        });
+    }
+}
+
+// update particles
+function updateParticles(){
+    particles.forEach(p=>{
+        p.x += p.dx;
+        p.y += p.dy;
+        p.life--;
+    });
+
+    particles = particles.filter(p=>p.life>0);
+}
+
+function update(){
+
+    if(gameOver) return;
+
+    // paddle
+    if(keys["ArrowLeft"]) paddle.x -= paddle.speed;
+    if(keys["ArrowRight"]) paddle.x += paddle.speed;
+
+    paddle.x = Math.max(0, Math.min(canvas.width - paddle.w, paddle.x));
+
+    // ball
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    // walls
+    if(ball.x < ball.r || ball.x > canvas.width - ball.r){
+        ball.dx *= -1;
+        shake = 5;
+    }
+
+    if(ball.y < ball.r){
+        ball.dy *= -1;
+        shake = 5;
+    }
+
+    // paddle bounce
+    if(
+        ball.x > paddle.x &&
+        ball.x < paddle.x + paddle.w &&
+        ball.y + ball.r >= paddle.y
+    ){
+        let hit = (ball.x - (paddle.x + paddle.w/2)) / (paddle.w/2);
+        ball.dx = hit * 5;
+        ball.dy *= -1;
+    }
+
+    // bottom
+    if(ball.y > canvas.height){
+        lives--;
+        shake = 10;
+
+        if(lives <= 0){
+            gameOver = true;
+        }else{
+            ball.x = 260;
+            ball.y = 300;
+            ball.dx = 4;
+            ball.dy = -4;
+        }
+    }
+
+    // bricks
+    for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+
+            if(bricks[r][c].status===1){
+
+                let bx = c*(brickW+gap)+offsetX;
+                let by = r*(brickH+gap)+offsetY;
+
+                if(
+                    ball.x > bx &&
+                    ball.x < bx + brickW &&
+                    ball.y > by &&
+                    ball.y < by + brickH
+                ){
+                    bricks[r][c].status = 0;
+                    ball.dy *= -1;
+
+                    score += 10;
+                    document.getElementById("score").innerText = score;
+
+                    spawnParticles(ball.x,ball.y);
+                    shake = 8;
+                }
+            }
+        }
+    }
+
+    updateParticles();
+}
+
+function draw(){
+
+    // screen shake
+    let sx = 0, sy = 0;
+    if(shake > 0){
+        sx = (Math.random()-0.5)*shake;
+        sy = (Math.random()-0.5)*shake;
+        shake *= 0.9;
+    }
+
+    ctx.setTransform(1,0,0,1,sx,sy);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // bricks
+    for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+            if(bricks[r][c].status===1){
+                let bx = c*(brickW+gap)+offsetX;
+                let by = r*(brickH+gap)+offsetY;
+
+                ctx.fillStyle="#22c55e";
+                ctx.fillRect(bx,by,brickW,brickH);
+            }
+        }
+    }
+
+    // paddle
+    ctx.fillStyle="#38bdf8";
+    ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+
+    // ball trail (fake glow)
+    ctx.fillStyle="yellow";
+    ctx.beginPath();
+    ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);
+    ctx.fill();
+
+    // particles
+    particles.forEach(p=>{
+        ctx.fillStyle="orange";
+        ctx.fillRect(p.x,p.y,3,3);
+    });
+
+    // UI
+    ctx.setTransform(1,0,0,1,0,0);
+
+    ctx.fillStyle="white";
+    ctx.fillText("Lives: "+lives,10,20);
+
+    if(gameOver){
+        ctx.font="30px Arial";
+        ctx.fillText("Game Over",170,300);
+    }
+}
+
+function loop(){
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+function restart(){
+    init();
+}
+
+init();
+loop();
+</script>
+</body>
+</html>

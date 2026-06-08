@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Shooter (Fixed)</title>
+
+<style>
+body{
+    margin:0;
+    background:#050814;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:Arial;
+    color:white;
+}
+
+canvas{
+    background:linear-gradient(#050814,#0f172a);
+    border:3px solid #22c55e;
+    border-radius:10px;
+}
+
+.hud{
+    position:absolute;
+    top:15px;
+    left:15px;
+    font-size:18px;
+}
+
+button{
+    margin-top:8px;
+    padding:8px 14px;
+    border:none;
+    background:#22c55e;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hud">
+Score: <span id="score">0</span><br>
+<button onclick="restart()">Restart</button>
+</div>
+
+<canvas id="game" width="500" height="650"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player, bullets, enemies;
+let score = 0;
+let gameOver = false;
+let frame = 0;
+let lastShot = 0;
+
+const keys = {};
+
+function init(){
+
+    player = {
+        x:250,
+        y:580,
+        w:30,
+        h:30,
+        speed:6
+    };
+
+    bullets = [];
+    enemies = [];
+    score = 0;
+    gameOver = false;
+    frame = 0;
+    lastShot = 0;
+
+    document.getElementById("score").innerText = 0;
+}
+
+// INPUT
+document.addEventListener("keydown",e=> keys[e.key]=true);
+document.addEventListener("keyup",e=> keys[e.key]=false);
+
+// SHOOT (FIXED COOLDOWN)
+function shoot(){
+    if(frame - lastShot < 12) return;
+
+    bullets.push({
+        x: player.x + player.w/2 - 2,
+        y: player.y,
+        w: 4,
+        h: 10,
+        speed: 8
+    });
+
+    lastShot = frame;
+}
+
+// ENEMY
+function spawnEnemy(){
+    enemies.push({
+        x: Math.random() * (canvas.width - 30),
+        y: -20,
+        w: 25,
+        h: 25,
+        speed: 2 + Math.random()*2
+    });
+}
+
+// UPDATE
+function update(){
+
+    if(gameOver) return;
+
+    // movement
+    if(keys["ArrowLeft"]) player.x -= player.speed;
+    if(keys["ArrowRight"]) player.x += player.speed;
+
+    player.x = Math.max(0, Math.min(canvas.width-player.w, player.x));
+
+    // shooting
+    if(keys[" "]){
+        shoot();
+    }
+
+    // bullets (SAFE LOOP)
+    bullets = bullets.filter(b => {
+        b.y -= b.speed;
+        return b.y > -20;
+    });
+
+    // enemies
+    enemies = enemies.filter(e => {
+        e.y += e.speed;
+        return e.y < canvas.height + 50;
+    });
+
+    // spawn control
+    if(frame % 55 === 0){
+        spawnEnemy();
+    }
+
+    // bullet collision (SAFE)
+    for(let i = bullets.length - 1; i >= 0; i--){
+        for(let j = enemies.length - 1; j >= 0; j--){
+
+            let b = bullets[i];
+            let e = enemies[j];
+
+            if(!b || !e) continue;
+
+            if(
+                b.x < e.x + e.w &&
+                b.x + b.w > e.x &&
+                b.y < e.y + e.h &&
+                b.y + b.h > e.y
+            ){
+                bullets.splice(i,1);
+                enemies.splice(j,1);
+                score += 10;
+                break;
+            }
+        }
+    }
+
+    // player collision
+    for(let e of enemies){
+        if(
+            e.x < player.x + player.w &&
+            e.x + e.w > player.x &&
+            e.y < player.y + player.h &&
+            e.y + e.h > player.y
+        ){
+            gameOver = true;
+        }
+    }
+
+    frame++;
+}
+
+// DRAW
+function draw(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // player
+    ctx.fillStyle="#38bdf8";
+    ctx.fillRect(player.x,player.y,player.w,player.h);
+
+    // bullets
+    ctx.fillStyle="yellow";
+    bullets.forEach(b=>{
+        ctx.fillRect(b.x,b.y,b.w,b.h);
+    });
+
+    // enemies
+    ctx.fillStyle="#22c55e";
+    enemies.forEach(e=>{
+        ctx.fillRect(e.x,e.y,e.w,e.h);
+    });
+
+    document.getElementById("score").innerText = score;
+
+    if(gameOver){
+        ctx.fillStyle="white";
+        ctx.font="30px Arial";
+        ctx.fillText("Game Over",170,300);
+    }
+}
+
+// LOOP (ONLY ONE)
+function loop(){
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+// RESTART (FIXED - NO MULTIPLE LOOPS)
+function restart(){
+    init();
+}
+
+// CONTROLS
+init();
+loop();
+</script>
+
+</body>
+</html>

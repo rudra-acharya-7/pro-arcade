@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Bird</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#70c5ce;
+    font-family:Arial,sans-serif;
+}
+
+canvas{
+    display:block;
+    margin:auto;
+    background:#70c5ce;
+}
+
+#score{
+    position:absolute;
+    top:20px;
+    width:100%;
+    text-align:center;
+    font-size:35px;
+    color:white;
+    font-weight:bold;
+}
+
+#gameOver{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    color:white;
+    display:none;
+}
+
+button{
+    padding:10px 20px;
+    font-size:18px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="score">0</div>
+
+<div id="gameOver">
+    <h1>Game Over</h1>
+    <p>Press Space or Click Restart</p>
+    <button onclick="restart()">Restart</button>
+</div>
+
+<canvas id="game" width="400" height="600"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const scoreText = document.getElementById("score");
+const gameOverBox = document.getElementById("gameOver");
+
+let score = 0;
+let gameRunning = true;
+
+const bird = {
+    x:100,
+    y:250,
+    width:40,
+    height:40,
+    velocity:0,
+    gravity:0.5,
+    jump:-8
+};
+
+let pipes = [];
+
+function createPipe(){
+
+    let gap = 160;
+
+    let topHeight =
+    Math.random()*250+50;
+
+    pipes.push({
+        x:canvas.width,
+        top:topHeight,
+        bottom:topHeight+gap,
+        width:60,
+        passed:false
+    });
+}
+
+setInterval(()=>{
+
+    if(gameRunning){
+        createPipe();
+    }
+
+},1800);
+
+document.addEventListener("keydown",e=>{
+
+    if(e.code==="Space"){
+
+        if(gameRunning){
+            bird.velocity = bird.jump;
+        }else{
+            restart();
+        }
+    }
+});
+
+canvas.addEventListener("click",()=>{
+
+    if(gameRunning){
+        bird.velocity = bird.jump;
+    }
+});
+
+function update(){
+
+    if(!gameRunning) return;
+
+    bird.velocity += bird.gravity;
+    bird.y += bird.velocity;
+
+    if(
+        bird.y < 0 ||
+        bird.y + bird.height > canvas.height
+    ){
+        endGame();
+    }
+
+    pipes.forEach(pipe=>{
+
+        pipe.x -= 3;
+
+        if(
+            bird.x < pipe.x + pipe.width &&
+            bird.x + bird.width > pipe.x &&
+            (
+                bird.y < pipe.top ||
+                bird.y + bird.height > pipe.bottom
+            )
+        ){
+            endGame();
+        }
+
+        if(
+            !pipe.passed &&
+            pipe.x + pipe.width < bird.x
+        ){
+            pipe.passed = true;
+            score++;
+            scoreText.innerText = score;
+        }
+    });
+
+    pipes = pipes.filter(
+        pipe => pipe.x + pipe.width > 0
+    );
+}
+
+function draw(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    ctx.fillStyle="#8ED6FF";
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    pipes.forEach(pipe=>{
+
+        ctx.fillStyle="green";
+
+        ctx.fillRect(
+            pipe.x,
+            0,
+            pipe.width,
+            pipe.top
+        );
+
+        ctx.fillRect(
+            pipe.x,
+            pipe.bottom,
+            pipe.width,
+            canvas.height-pipe.bottom
+        );
+    });
+
+    ctx.font="35px Arial";
+    ctx.fillText(
+        "🐦",
+        bird.x,
+        bird.y+35
+    );
+}
+
+function endGame(){
+
+    gameRunning = false;
+
+    gameOverBox.style.display =
+    "block";
+}
+
+function restart(){
+
+    score = 0;
+
+    bird.y = 250;
+    bird.velocity = 0;
+
+    pipes = [];
+
+    gameRunning = true;
+
+    scoreText.innerText = score;
+
+    gameOverBox.style.display =
+    "none";
+}
+
+function loop(){
+
+    update();
+    draw();
+
+    requestAnimationFrame(loop);
+}
+
+loop();
+
+</script>
+
+</body>
+</html>

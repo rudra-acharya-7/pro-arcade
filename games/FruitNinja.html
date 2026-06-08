@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fruit Ninja Pro</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#111;
+    font-family:Arial,sans-serif;
+}
+
+canvas{
+    display:block;
+}
+
+#hud{
+    position:absolute;
+    top:15px;
+    left:15px;
+    color:white;
+    font-size:24px;
+    z-index:10;
+}
+
+#gameOver{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    color:white;
+    text-align:center;
+    display:none;
+}
+
+#gameOver h1{
+    font-size:50px;
+}
+
+button{
+    padding:12px 25px;
+    font-size:20px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="hud">
+<div id="score">Score: 0</div>
+<div id="lives">Lives: ❤️❤️❤️</div>
+<div id="high">High Score: 0</div>
+</div>
+
+<div id="gameOver">
+<h1>GAME OVER</h1>
+<p id="finalScore"></p>
+<button onclick="restart()">Play Again</button>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let fruits = [];
+let score = 0;
+let lives = 3;
+let gameRunning = true;
+
+let combo = 0;
+let comboTimer = 0;
+
+let mouse = {
+    x:0,
+    y:0,
+    down:false
+};
+
+let trail = [];
+
+const scoreDiv = document.getElementById("score");
+const livesDiv = document.getElementById("lives");
+const highDiv = document.getElementById("high");
+const gameOverDiv = document.getElementById("gameOver");
+const finalScoreDiv = document.getElementById("finalScore");
+
+let highScore =
+parseInt(localStorage.getItem("fruitNinjaHigh")) || 0;
+
+highDiv.innerText = "High Score: " + highScore;
+
+class Fruit{
+
+    constructor(){
+
+        this.radius = 25 + Math.random()*15;
+
+        this.x = Math.random()*canvas.width;
+
+        this.y = canvas.height + 50;
+
+        this.vx = (Math.random()-0.5)*8;
+
+        this.vy = -(14 + Math.random()*6);
+
+        this.gravity = 0.25;
+
+        this.isBomb = Math.random() < 0.12;
+
+        this.color =
+        ["red","orange","yellow","lime","cyan","pink"]
+        [Math.floor(Math.random()*6)];
+    }
+
+    update(){
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        this.vy += this.gravity;
+    }
+
+    draw(){
+
+        ctx.beginPath();
+
+        ctx.arc(
+            this.x,
+            this.y,
+            this.radius,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fillStyle =
+        this.isBomb ? "#222" : this.color;
+
+        ctx.fill();
+
+        if(this.isBomb){
+
+            ctx.fillStyle="white";
+            ctx.font="20px Arial";
+            ctx.fillText(
+                "💣",
+                this.x-10,
+                this.y+7
+            );
+        }
+    }
+}
+
+function spawnFruit(){
+
+    if(!gameRunning) return;
+
+    fruits.push(new Fruit());
+}
+
+setInterval(()=>{
+    if(gameRunning){
+
+        spawnFruit();
+
+        if(Math.random()<0.4){
+            spawnFruit();
+        }
+    }
+},700);
+
+function updateHUD(){
+
+    scoreDiv.innerText =
+    "Score: " + score;
+
+    livesDiv.innerText =
+    "Lives: " + "❤️".repeat(lives);
+
+    highDiv.innerText =
+    "High Score: " + highScore;
+}
+
+function loseLife(){
+
+    lives--;
+
+    if(lives <= 0){
+
+        gameOver();
+
+    }
+
+    updateHUD();
+}
+
+function gameOver(){
+
+    gameRunning = false;
+
+    if(score > highScore){
+
+        highScore = score;
+
+        localStorage.setItem(
+            "fruitNinjaHigh",
+            highScore
+        );
+    }
+
+    finalScoreDiv.innerText =
+    "Final Score: " + score;
+
+    gameOverDiv.style.display =
+    "block";
+}
+
+function restart(){
+
+    fruits = [];
+
+    score = 0;
+
+    lives = 3;
+
+    combo = 0;
+
+    comboTimer = 0;
+
+    trail = [];
+
+    gameRunning = true;
+
+    gameOverDiv.style.display =
+    "none";
+
+    updateHUD();
+}
+
+function sliceCheck(){
+
+    for(
+        let i=fruits.length-1;
+        i>=0;
+        i--
+    ){
+
+        let f = fruits[i];
+
+        let dx =
+        mouse.x - f.x;
+
+        let dy =
+        mouse.y - f.y;
+
+        let dist =
+        Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < f.radius+15){
+
+            if(f.isBomb){
+
+                gameOver();
+                return;
+            }
+
+            fruits.splice(i,1);
+
+            score++;
+
+            combo++;
+
+            comboTimer = 60;
+
+            if(combo >= 3){
+
+                score += 5;
+            }
+
+            updateHUD();
+        }
+    }
+}
+
+canvas.addEventListener(
+"mousedown",
+()=>mouse.down=true
+);
+
+canvas.addEventListener(
+"mouseup",
+()=>mouse.down=false
+);
+
+canvas.addEventListener(
+"mousemove",
+e=>{
+
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+
+    trail.push({
+        x:mouse.x,
+        y:mouse.y
+    });
+
+    if(trail.length > 20){
+        trail.shift();
+    }
+
+    if(mouse.down){
+        sliceCheck();
+    }
+});
+
+canvas.addEventListener(
+"touchmove",
+e=>{
+
+    e.preventDefault();
+
+    const t =
+    e.touches[0];
+
+    mouse.x = t.clientX;
+    mouse.y = t.clientY;
+
+    mouse.down = true;
+
+    sliceCheck();
+});
+
+function update(){
+
+    if(!gameRunning) return;
+
+    for(
+        let i=fruits.length-1;
+        i>=0;
+        i--
+    ){
+
+        fruits[i].update();
+
+        if(
+            fruits[i].y >
+            canvas.height+100
+        ){
+
+            if(!fruits[i].isBomb){
+
+                loseLife();
+            }
+
+            fruits.splice(i,1);
+        }
+    }
+
+    if(comboTimer > 0){
+
+        comboTimer--;
+
+    }else{
+
+        combo = 0;
+    }
+}
+
+function drawTrail(){
+
+    if(trail.length < 2) return;
+
+    ctx.beginPath();
+
+    for(
+        let i=0;
+        i<trail.length;
+        i++
+    ){
+
+        let p = trail[i];
+
+        if(i===0){
+
+            ctx.moveTo(p.x,p.y);
+
+        }else{
+
+            ctx.lineTo(p.x,p.y);
+        }
+    }
+
+    ctx.strokeStyle="white";
+    ctx.lineWidth=4;
+    ctx.stroke();
+}
+
+function draw(){
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    drawTrail();
+
+    fruits.forEach(
+        fruit=>fruit.draw()
+    );
+
+    if(combo >= 3){
+
+        ctx.fillStyle="gold";
+
+        ctx.font="30px Arial";
+
+        ctx.fillText(
+            "COMBO x" + combo,
+            canvas.width/2-80,
+            60
+        );
+    }
+}
+
+function loop(){
+
+    update();
+
+    draw();
+
+    requestAnimationFrame(loop);
+}
+
+updateHUD();
+loop();
+
+window.addEventListener(
+"resize",
+()=>{
+
+    canvas.width =
+    window.innerWidth;
+
+    canvas.height =
+    window.innerHeight;
+});
+
+</script>
+
+</body>
+</html>

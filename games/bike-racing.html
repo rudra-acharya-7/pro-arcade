@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bike Racing Pro</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#111;
+    font-family:Arial,sans-serif;
+}
+
+canvas{
+    display:block;
+    margin:auto;
+    background:#444;
+}
+
+#ui{
+    position:absolute;
+    top:10px;
+    left:10px;
+    color:white;
+    font-size:22px;
+}
+
+#controls{
+    position:absolute;
+    top:10px;
+    right:10px;
+    color:white;
+    text-align:right;
+    font-size:15px;
+}
+
+#gameOver{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    color:white;
+    text-align:center;
+    display:none;
+}
+
+button{
+    padding:12px 25px;
+    font-size:18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="ui">
+    <div id="score">Score: 0</div>
+    <div id="lives">❤️❤️❤️</div>
+    <div id="high">High: 0</div>
+</div>
+
+<div id="controls">
+    A/D or ←/→ = Move<br>
+    W or ↑ or Space = Nitro ⚡<br>
+    Enter = Restart
+</div>
+
+<div id="gameOver">
+    <h1>GAME OVER</h1>
+    <button onclick="restart()">Restart</button>
+</div>
+
+<canvas id="game" width="400" height="700"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let score = 0;
+let lives = 3;
+let nitro = 100;
+let roadOffset = 0;
+let gameOver = false;
+
+let highScore =
+parseInt(localStorage.getItem("bikeHigh")) || 0;
+
+document.getElementById("high").innerHTML =
+"High: " + highScore;
+
+const bike = {
+    x:180,
+    y:580,
+    speed:7
+};
+
+let cars = [];
+let coins = [];
+let keys = {};
+
+document.addEventListener("keydown",e=>{
+
+    keys[e.key] = true;
+
+    if(gameOver && e.key==="Enter"){
+        restart();
+    }
+
+});
+
+document.addEventListener("keyup",e=>{
+    keys[e.key] = false;
+});
+
+function spawnCar(){
+
+    cars.push({
+        x:Math.random() * 320 + 20,
+        y:-100,
+        w:50,
+        h:80
+    });
+}
+
+function spawnCoin(){
+
+    coins.push({
+        x:Math.random() * 320 + 20,
+        y:-50
+    });
+}
+
+setInterval(()=>{
+
+    if(!gameOver){
+
+        spawnCar();
+
+        if(Math.random()<0.5){
+            spawnCoin();
+        }
+    }
+
+},1000);
+
+function update(){
+
+    if(gameOver) return;
+
+    let speed = 8;
+
+    if(
+        keys["w"] ||
+        keys["W"] ||
+        keys["ArrowUp"] ||
+        keys[" "]
+    ){
+
+        if(nitro > 0){
+
+            speed = 16;
+            nitro -= 0.5;
+        }
+    }
+
+    if(
+        keys["a"] ||
+        keys["A"] ||
+        keys["ArrowLeft"]
+    ){
+        bike.x -= bike.speed;
+    }
+
+    if(
+        keys["d"] ||
+        keys["D"] ||
+        keys["ArrowRight"]
+    ){
+        bike.x += bike.speed;
+    }
+
+    bike.x = Math.max(
+        10,
+        Math.min(canvas.width - 60,bike.x)
+    );
+
+    for(let i=cars.length-1;i>=0;i--){
+
+        cars[i].y += speed;
+
+        if(
+            bike.x < cars[i].x + cars[i].w &&
+            bike.x + 50 > cars[i].x &&
+            bike.y < cars[i].y + cars[i].h &&
+            bike.y + 50 > cars[i].y
+        ){
+
+            cars.splice(i,1);
+
+            lives--;
+
+            updateUI();
+
+            if(lives<=0){
+                endGame();
+            }
+        }
+
+        if(cars[i] && cars[i].y > canvas.height){
+
+            cars.splice(i,1);
+
+            score++;
+
+            updateUI();
+        }
+    }
+
+    for(let i=coins.length-1;i>=0;i--){
+
+        coins[i].y += speed;
+
+        if(
+            Math.abs(coins[i].x-bike.x)<40 &&
+            Math.abs(coins[i].y-bike.y)<40
+        ){
+
+            coins.splice(i,1);
+
+            score += 5;
+
+            nitro = Math.min(
+                100,
+                nitro + 10
+            );
+
+            updateUI();
+        }
+    }
+
+    nitro = Math.min(100,nitro+0.03);
+}
+
+function drawRoad(){
+
+    ctx.fillStyle="#333";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    roadOffset += 10;
+
+    ctx.fillStyle="white";
+
+    for(let y=-60;y<canvas.height;y+=80){
+
+        ctx.fillRect(
+            195,
+            y + (roadOffset % 80),
+            10,
+            40
+        );
+    }
+}
+
+function draw(){
+
+    drawRoad();
+
+    ctx.font="50px Arial";
+    ctx.fillText("🏍️",bike.x,bike.y);
+
+    cars.forEach(car=>{
+        ctx.fillText("🚗",car.x,car.y);
+    });
+
+    coins.forEach(coin=>{
+        ctx.fillText("🪙",coin.x,coin.y);
+    });
+
+    ctx.fillStyle="cyan";
+
+    ctx.fillRect(
+        10,
+        650,
+        nitro*2,
+        15
+    );
+
+    ctx.strokeStyle="white";
+    ctx.strokeRect(10,650,200,15);
+
+    if(gameOver){
+
+        ctx.fillStyle="white";
+        ctx.font="40px Arial";
+        ctx.fillText(
+            "GAME OVER",
+            70,
+            300
+        );
+    }
+}
+
+function updateUI(){
+
+    document.getElementById("score")
+    .innerHTML =
+    "Score: " + score;
+
+    document.getElementById("lives")
+    .innerHTML =
+    "❤️".repeat(lives);
+
+    if(score > highScore){
+
+        highScore = score;
+
+        localStorage.setItem(
+            "bikeHigh",
+            highScore
+        );
+
+        document.getElementById("high")
+        .innerHTML =
+        "High: " + highScore;
+    }
+}
+
+function endGame(){
+
+    gameOver = true;
+
+    document.getElementById("gameOver")
+    .style.display = "block";
+}
+
+function restart(){
+
+    score = 0;
+    lives = 3;
+    nitro = 100;
+
+    cars = [];
+    coins = [];
+
+    bike.x = 180;
+
+    gameOver = false;
+
+    document.getElementById("gameOver")
+    .style.display = "none";
+
+    updateUI();
+}
+
+function loop(){
+
+    update();
+    draw();
+
+    requestAnimationFrame(loop);
+}
+
+updateUI();
+loop();
+
+</script>
+
+</body>
+</html>

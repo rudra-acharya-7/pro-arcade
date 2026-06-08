@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe</title>
+
+<style>
+body{
+    margin:0;
+    background:#0b1020;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:Arial;
+    color:white;
+    flex-direction:column;
+}
+
+h1{
+    margin-bottom:10px;
+}
+
+.board{
+    display:grid;
+    grid-template-columns:repeat(3,100px);
+    grid-template-rows:repeat(3,100px);
+    gap:8px;
+}
+
+.cell{
+    width:100px;
+    height:100px;
+    background:#1f2937;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:40px;
+    cursor:pointer;
+    border-radius:10px;
+    transition:0.2s;
+}
+
+.cell:hover{
+    background:#374151;
+}
+
+button{
+    margin-top:15px;
+    padding:8px 14px;
+    background:#22c55e;
+    border:none;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Tic Tac Toe</h1>
+
+<div class="board" id="board"></div>
+<button onclick="reset()">Restart</button>
+
+<script>
+const boardEl = document.getElementById("board");
+let board = Array(9).fill("");
+let gameOver = false;
+
+const winPatterns = [
+[0,1,2],[3,4,5],[6,7,8],
+[0,3,6],[1,4,7],[2,5,8],
+[0,4,8],[2,4,6]
+];
+
+// create board
+function draw(){
+    boardEl.innerHTML = "";
+
+    board.forEach((val,i)=>{
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.innerText = val;
+
+        cell.addEventListener("click",()=>move(i));
+
+        boardEl.appendChild(cell);
+    });
+}
+
+function move(i){
+    if(board[i] || gameOver) return;
+
+    board[i] = "X";
+
+    if(checkWin("X")){
+        gameOver = true;
+        setTimeout(()=>alert("You Win!"),100);
+        return;
+    }
+
+    aiMove();
+    draw();
+}
+
+function aiMove(){
+
+    let empty = board.map((v,i)=>v===""?i:null).filter(v=>v!==null);
+
+    if(empty.length === 0) return;
+
+    let move = empty[Math.floor(Math.random()*empty.length)];
+    board[move] = "O";
+
+    if(checkWin("O")){
+        gameOver = true;
+        setTimeout(()=>alert("AI Wins!"),100);
+    }
+}
+
+function checkWin(p){
+    return winPatterns.some(pattern=>{
+        return pattern.every(i=>board[i]===p);
+    });
+}
+
+function reset(){
+    board = Array(9).fill("");
+    gameOver = false;
+    draw();
+}
+
+draw();
+</script>
+
+</body>
+</html>
