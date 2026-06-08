@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,27 +7,45 @@
 <title>Flappy Bird</title>
 
 <style>
-body{
+*{
     margin:0;
-    overflow:hidden;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
     background:#70c5ce;
     font-family:Arial,sans-serif;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    text-align:center;
+    position:relative;
 }
 
 canvas{
-    display:block;
-    margin:auto;
     background:#70c5ce;
+    border:3px solid #333;
+    border-radius:10px;
+    width:min(95vw,400px);
+    height:auto;
+    touch-action:none;
 }
 
 #score{
     position:absolute;
-    top:20px;
-    width:100%;
-    text-align:center;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
     font-size:35px;
     color:white;
     font-weight:bold;
+    text-shadow:2px 2px 4px rgba(0,0,0,0.4);
 }
 
 #gameOver{
@@ -37,26 +56,36 @@ canvas{
     text-align:center;
     color:white;
     display:none;
+    background:rgba(0,0,0,0.7);
+    padding:20px;
+    border-radius:10px;
 }
 
 button{
     padding:10px 20px;
     font-size:18px;
+    border:none;
+    border-radius:6px;
     cursor:pointer;
+    margin-top:10px;
 }
 </style>
 </head>
 <body>
 
-<div id="score">0</div>
+<div class="container">
 
-<div id="gameOver">
-    <h1>Game Over</h1>
-    <p>Press Space or Click Restart</p>
-    <button onclick="restart()">Restart</button>
+    <div id="score">0</div>
+
+    <div id="gameOver">
+        <h1>Game Over</h1>
+        <p>Tap Screen or Press Space</p>
+        <button onclick="restart()">Restart</button>
+    </div>
+
+    <canvas id="game" width="400" height="600"></canvas>
+
 </div>
-
-<canvas id="game" width="400" height="600"></canvas>
 
 <script>
 
@@ -83,21 +112,21 @@ let pipes = [];
 
 function createPipe(){
 
-    let gap = 160;
+    const gap = 160;
 
-    let topHeight =
-    Math.random()*250+50;
+    const topHeight =
+    Math.random() * 250 + 50;
 
     pipes.push({
         x:canvas.width,
         top:topHeight,
-        bottom:topHeight+gap,
+        bottom:topHeight + gap,
         width:60,
         passed:false
     });
 }
 
-setInterval(()=>{
+setInterval(() => {
 
     if(gameRunning){
         createPipe();
@@ -105,24 +134,29 @@ setInterval(()=>{
 
 },1800);
 
-document.addEventListener("keydown",e=>{
-
-    if(e.code==="Space"){
-
-        if(gameRunning){
-            bird.velocity = bird.jump;
-        }else{
-            restart();
-        }
-    }
-});
-
-canvas.addEventListener("click",()=>{
+function flap(){
 
     if(gameRunning){
         bird.velocity = bird.jump;
+    }else{
+        restart();
     }
+}
+
+document.addEventListener("keydown",(e)=>{
+
+    if(e.code === "Space"){
+        flap();
+    }
+
 });
+
+canvas.addEventListener("click", flap);
+
+canvas.addEventListener("touchstart",(e)=>{
+    e.preventDefault();
+    flap();
+},{passive:false});
 
 function update(){
 
@@ -138,7 +172,7 @@ function update(){
         endGame();
     }
 
-    pipes.forEach(pipe=>{
+    pipes.forEach(pipe => {
 
         pipe.x -= 3;
 
@@ -159,8 +193,9 @@ function update(){
         ){
             pipe.passed = true;
             score++;
-            scoreText.innerText = score;
+            scoreText.textContent = score;
         }
+
     });
 
     pipes = pipes.filter(
@@ -177,7 +212,8 @@ function draw(){
         canvas.height
     );
 
-    ctx.fillStyle="#8ED6FF";
+    ctx.fillStyle = "#8ED6FF";
+
     ctx.fillRect(
         0,
         0,
@@ -185,9 +221,9 @@ function draw(){
         canvas.height
     );
 
-    pipes.forEach(pipe=>{
+    pipes.forEach(pipe => {
 
-        ctx.fillStyle="green";
+        ctx.fillStyle = "green";
 
         ctx.fillRect(
             pipe.x,
@@ -200,15 +236,16 @@ function draw(){
             pipe.x,
             pipe.bottom,
             pipe.width,
-            canvas.height-pipe.bottom
+            canvas.height - pipe.bottom
         );
+
     });
 
-    ctx.font="35px Arial";
+    ctx.font = "35px Arial";
     ctx.fillText(
         "🐦",
         bird.x,
-        bird.y+35
+        bird.y + 35
     );
 }
 
@@ -231,7 +268,7 @@ function restart(){
 
     gameRunning = true;
 
-    scoreText.innerText = score;
+    scoreText.textContent = score;
 
     gameOverBox.style.display =
     "none";
@@ -251,3 +288,4 @@ loop();
 
 </body>
 </html>
+```
