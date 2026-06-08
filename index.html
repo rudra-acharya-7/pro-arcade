@@ -7,6 +7,7 @@
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#22c55e">
+
 <style>
 *{
     margin:0;
@@ -43,7 +44,6 @@ body{
     padding:10px;
     border-radius:10px;
     cursor:pointer;
-    transition:0.3s;
 }
 
 .nav:hover{
@@ -63,7 +63,7 @@ body{
     margin-bottom:20px;
 }
 
-.search input{
+.topbar input{
     width:100%;
     padding:12px;
     border-radius:10px;
@@ -84,7 +84,6 @@ body{
     padding:20px;
     border-radius:15px;
     position:relative;
-    transition:0.3s;
 }
 
 .card:hover{
@@ -104,205 +103,116 @@ body{
     font-weight:bold;
     cursor:pointer;
 }
-
-/* FAVORITE */
-.favorite{
-    position:absolute;
-    top:10px;
-    right:10px;
-    cursor:pointer;
-}
-
-/* STATS */
-.stats{
-    display:flex;
-    gap:10px;
-    margin:15px 0;
-}
-
-.stat{
-    padding:10px;
-    background:rgba(255,255,255,0.08);
-    border-radius:10px;
-}
-
-/* LIGHT THEME FIXED */
-.light{
-    background:#f5f5f5;
-    color:#111;
-}
-
-.light .card{
-    background:#fff;
-    color:#000;
-}
-
-.light .sidebar{
-    background:#fff;
-    color:#000;
-}
-
-.light .stat{
-    background:#ddd;
-    color:#000;
-}
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
     <div class="logo">🎮 PRO ARCADE</div>
 
-    <div class="nav" onclick="setFilter('all')">🏠 Home</div>
-    <div class="nav" onclick="setFilter('trending')">🔥 Trending</div>
-    <div class="nav" onclick="setFilter('favorites')">⭐ Favorites</div>
-    <div class="nav" onclick="setFilter('categories')">🎲 Categories</div>
-    <div class="nav" onclick="toggleTheme()">🌙 Theme</div>
-    <div class="nav" onclick="toggleFullscreen()">⛶ Fullscreen</div>
+    <div class="nav">🏠 Home</div>
+    <div class="nav">🔥 Trending</div>
+    <div class="nav">⭐ Favorites</div>
+    <div class="nav">🎲 Categories</div>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
 <div class="topbar">
     <input id="search" placeholder="Search games...">
-    <button class="play-btn" onclick="toggleMusic()">🎵 Music</button>
-</div>
-
-<div class="stats">
-    <div class="stat">🎮 Games: <span id="gameCount"></span></div>
-    <div class="stat">🏆 High Score: <span id="highScore"></span></div>
 </div>
 
 <section class="games">
 
-<!-- ALL 13 GAMES -->
-<div class="card" data-name="snake"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🐍</div><h2>Snake</h2><button class="play-btn" onclick="openGame('games/snake.html')">Play</button></div>
+<div class="card">
+<div class="icon">🐍</div>
+<h2>Snake</h2>
+<button class="play-btn" onclick="openGame('games/snake.html')">Play</button>
+</div>
 
-<div class="card" data-name="tetris"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🧩</div><h2>Tetris</h2><button class="play-btn" onclick="openGame('games/tetris.html')">Play</button></div>
+<div class="card">
+<div class="icon">🧩</div>
+<h2>Tetris</h2>
+<button class="play-btn" onclick="openGame('games/tetris.html')">Play</button>
+</div>
 
-<div class="card" data-name="pacman"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">👻</div><h2>Pacman</h2><button class="play-btn" onclick="openGame('games/pacman.html')">Play</button></div>
+<div class="card">
+<div class="icon">👻</div>
+<h2>Pacman</h2>
+<button class="play-btn" onclick="openGame('games/pacman.html')">Play</button>
+</div>
 
-<div class="card" data-name="chess"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">♟️</div><h2>Chess</h2><button class="play-btn" onclick="openGame('games/chess.html')">Play</button></div>
+<div class="card">
+<div class="icon">♟️</div>
+<h2>Chess</h2>
+<button class="play-btn" onclick="openGame('games/chess.html')">Play</button>
+</div>
 
-<div class="card" data-name="sudoku"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🔢</div><h2>Sudoku</h2><button class="play-btn" onclick="openGame('games/sudoku.html')">Play</button></div>
+<div class="card">
+<div class="icon">🔢</div>
+<h2>Sudoku</h2>
+<button class="play-btn" onclick="openGame('games/sudoku.html')">Play</button>
+</div>
 
-<div class="card" data-name="memory match"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🧠</div><h2>Memory Match</h2><button class="play-btn" onclick="openGame('games/memory-match.html')">Play</button></div>
+<div class="card">
+<div class="icon">🧠</div>
+<h2>Memory Match</h2>
+<button class="play-btn" onclick="openGame('games/memory-match.html')">Play</button>
+</div>
 
-<div class="card" data-name="breakout"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🧱</div><h2>Breakout</h2><button class="play-btn" onclick="openGame('games/breakout.html')">Play</button></div>
+<div class="card">
+<div class="icon">🧱</div>
+<h2>Breakout</h2>
+<button class="play-btn" onclick="openGame('games/breakout.html')">Play</button>
+</div>
 
-<div class="card" data-name="tic tac toe"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">❌</div><h2>Tic Tac Toe</h2><button class="play-btn" onclick="openGame('games/tic-tac-toe.html')">Play</button></div>
+<div class="card">
+<div class="icon">❌</div>
+<h2>Tic Tac Toe</h2>
+<button class="play-btn" onclick="openGame('games/tic-tac-toe.html')">Play</button>
+</div>
 
-<div class="card" data-name="space shooter"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🚀</div><h2>Space Shooter</h2><button class="play-btn" onclick="openGame('games/space-shooter.html')">Play</button></div>
+<div class="card">
+<div class="icon">🚀</div>
+<h2>Space Shooter</h2>
+<button class="play-btn" onclick="openGame('games/space-shooter.html')">Play</button>
+</div>
 
-<div class="card" data-name="2048"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🎲</div><h2>2048</h2><button class="play-btn" onclick="openGame('games/2048.html')">Play</button></div>
+<div class="card">
+<div class="icon">🎲</div>
+<h2>2048</h2>
+<button class="play-btn" onclick="openGame('games/2048.html')">Play</button>
+</div>
 
-<div class="card" data-name="fruit ninja"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🍉</div><h2>Fruit Ninja</h2><button class="play-btn" onclick="openGame('games/fruitNinja.html')">Play</button></div>
+<div class="card">
+<div class="icon">🍉</div>
+<h2>Fruit Ninja</h2>
+<button class="play-btn" onclick="openGame('games/fruit-ninja.html')">Play</button>
+</div>
 
-<div class="card" data-name="bike racing"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🏍️</div><h2>Bike Racing</h2><button class="play-btn" onclick="openGame('games/bike-racing.html')">Play</button></div>
+<div class="card">
+<div class="icon">🏍️</div>
+<h2>Bike Racing</h2>
+<button class="play-btn" onclick="openGame('games/bike-racing.html')">Play</button>
+</div>
 
-<div class="card" data-name="flappy bird"><div class="favorite" onclick="toggleFavorite(this)">⭐</div><div class="icon">🐦</div><h2>Flappy Bird</h2><button class="play-btn" onclick="openGame('games/flappybird.html')">Play</button></div>
+<div class="card">
+<div class="icon">🐦</div>
+<h2>Flappy Bird</h2>
+<button class="play-btn" onclick="openGame('games/flappybird.html')">Play</button>
+</div>
 
 </section>
 </div>
 
-<audio id="bgMusic" loop>
-    <source src="music.mp3" type="audio/mpeg">
-</audio>
-
 <script>
-
-let favs = JSON.parse(localStorage.getItem("favs") || "[]");
-let music = document.getElementById("bgMusic");
-let playing = false;
-let currentFilter = "all";
-
-/* OPEN GAME */
+/* FIXED NAVIGATION (IMPORTANT) */
 function openGame(file){
-    window.location.href = "./" + file;
+    window.location.href = file;
 }
-
-/* SEARCH + FILTER */
-document.getElementById("search").addEventListener("input", applyFilters);
-
-function setFilter(type){
-    currentFilter = type;
-    applyFilters();
-}
-
-function applyFilters(){
-    let val = document.getElementById("search").value.toLowerCase();
-
-    document.querySelectorAll(".card").forEach((card,i)=>{
-        let name = card.dataset.name.toLowerCase();
-
-        let matchSearch = name.includes(val);
-        let matchFilter = true;
-
-        if(currentFilter === "favorites")
-            matchFilter = favs.includes(card.dataset.name);
-
-        if(currentFilter === "trending")
-            matchFilter = i < 5;
-
-        if(currentFilter === "categories")
-            matchFilter = true;
-
-        card.style.display = (matchSearch && matchFilter) ? "" : "none";
-    });
-}
-
-/* FAVORITE */
-function toggleFavorite(el){
-    let name = el.parentElement.dataset.name;
-
-    if(favs.includes(name)){
-        favs = favs.filter(x=>x!==name);
-        el.innerHTML = "⭐";
-    } else {
-        favs.push(name);
-        el.innerHTML = "🌟";
-    }
-
-    localStorage.setItem("favs", JSON.stringify(favs));
-}
-
-/* THEME FIXED */
-function toggleTheme(){
-    document.body.classList.toggle("light");
-}
-
-/* FULLSCREEN */
-function toggleFullscreen(){
-    if(!document.fullscreenElement){
-        document.documentElement.requestFullscreen();
-    } else {
-        document.exitFullscreen();
-    }
-}
-
-/* MUSIC FIXED */
-function toggleMusic(){
-    if(!playing){
-        music.play().catch(()=>alert("Click again to enable music"));
-    } else {
-        music.pause();
-    }
-    playing = !playing;
-}
-
-/* INIT */
-document.getElementById("gameCount").innerText =
-document.querySelectorAll(".card").length;
-
-document.getElementById("highScore").innerText =
-localStorage.getItem("arcadeHigh") || 0;
-
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js")
-    .then(() => console.log("Service Worker Registered"));
-}
-
 </script>
 
 </body>
