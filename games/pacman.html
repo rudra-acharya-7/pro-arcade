@@ -65,6 +65,37 @@ button{
     font-size:22px;
 }
 
+#restartBox{
+
+display:none;
+
+position:absolute;
+
+top:50%;
+left:50%;
+
+transform:translate(-50%,-50%);
+
+background:#000;
+
+padding:30px;
+
+border:3px solid #22c55e;
+
+border-radius:15px;
+
+text-align:center;
+
+z-index:20;
+
+}
+
+
+#restartBox h1{
+
+color:red;
+
+}
 </head>
 
 
@@ -91,7 +122,13 @@ Lives:
 
 
 <canvas id="game" width="500" height="500"></canvas>
+<div id="restartBox">
 
+<h1>GAME OVER</h1>
+
+<button onclick="restart()">Restart</button>
+
+</div>
 
 
 <div class="controls">
@@ -231,7 +268,7 @@ x:x,
 y:y
 });
 
-
+document.getElementById("restartBox").style.display="none";
 }
 
 
@@ -410,13 +447,10 @@ g.y+=best.y;
 
 
 
-
 function collision(){
 
 
-
 for(let g of ghosts){
-
 
 
 if(
@@ -425,16 +459,32 @@ g.y==pac.y
 ){
 
 
-
 lives--;
-
 
 updateHUD();
 
 
 
+if(lives<=0){
+
+
+gameOver=true;
+
+
+document.getElementById("restartBox").style.display="block";
+
+
+return;
+
+
+}
+
+
+
+
 pac.x=1;
 pac.y=1;
+
 pac.dx=0;
 pac.dy=0;
 
@@ -453,18 +503,11 @@ ghosts[2].y=18;
 
 
 
-
-if(lives<=0)
-
-gameOver=true;
-
+}
 
 
 }
 
-
-
-}
 
 
 }
