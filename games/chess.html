@@ -2,9 +2,13 @@
 <html>
 <head>
 
-<title>Chess Pro v2</title>
+<title>Chess Pro</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
 
 <style>
 
@@ -12,26 +16,26 @@ body{
 margin:0;
 height:100vh;
 background:#0b1020;
+color:white;
+font-family:Arial;
 display:flex;
 flex-direction:column;
 justify-content:center;
 align-items:center;
-font-family:Arial;
-color:white;
 }
 
 
 #info{
-font-size:20px;
-margin-bottom:10px;
+font-size:22px;
+margin-bottom:15px;
+text-align:center;
 }
 
 
 #board{
 
 width:90vw;
-max-width:480px;
-
+max-width:500px;
 aspect-ratio:1;
 
 display:grid;
@@ -42,29 +46,34 @@ border:4px solid #22c55e;
 }
 
 
-.cell{
+.square{
 
 display:flex;
-justify-content:center;
 align-items:center;
+justify-content:center;
 
-font-size:clamp(25px,8vw,45px);
+font-size:clamp(25px,8vw,50px);
 
 cursor:pointer;
+
 user-select:none;
 
 }
 
 
 
-.white{
+.light{
+
 background:#e5e7eb;
 color:black;
+
 }
 
 
-.black{
+.dark{
+
 background:#374151;
+
 }
 
 
@@ -80,7 +89,7 @@ outline:4px solid yellow;
 .move{
 
 box-shadow:
-inset 0 0 0 4px #22c55e;
+inset 0 0 0 5px #22c55e;
 
 }
 
@@ -90,7 +99,7 @@ button{
 
 margin-top:15px;
 
-padding:10px 25px;
+padding:12px 25px;
 
 background:#22c55e;
 
@@ -110,20 +119,13 @@ font-size:18px;
 </head>
 
 
-
 <body>
-
 
 
 <div id="info">
 
 Turn:
 <span id="turn">White</span>
-
-<br>
-
-Moves:
-<span id="moves">0</span>
 
 </div>
 
@@ -140,7 +142,6 @@ Restart
 
 
 
-
 <script>
 
 
@@ -148,330 +149,61 @@ const board =
 document.getElementById("board");
 
 
+const info =
+document.getElementById("info");
+
+
+
+let game =
+new Chess();
+
+
+
+let selected=null;
+
+
+
+let ended=false;
+
+
+
 
 const pieces={
 
+
+p:"♟",
 r:"♜",
 n:"♞",
 b:"♝",
 q:"♛",
 k:"♚",
-p:"♟",
 
+P:"♙",
 R:"♖",
 N:"♘",
 B:"♗",
 Q:"♕",
-K:"♔",
-P:"♙"
+K:"♔"
 
 };
 
 
 
 
-let state;
-
-let selected=null;
-
-let possible=[];
-
-let turn="white";
-
-let moves=0;
 
 
+const squares=[
 
-
-
-function restart(){
-
-
-state=[
-
-"r","n","b","q","k","b","n","r",
-
-"p","p","p","p","p","p","p","p",
-
-"","","","","","","","",
-
-"","","","","","","","",
-
-"","","","","","","","",
-
-"","","","","","","","",
-
-"P","P","P","P","P","P","P","P",
-
-"R","N","B","Q","K","B","N","R"
+"a8","b8","c8","d8","e8","f8","g8","h8",
+"a7","b7","c7","d7","e7","f7","g7","h7",
+"a6","b6","c6","d6","e6","f6","g6","h6",
+"a5","b5","c5","d5","e5","f5","g5","h5",
+"a4","b4","c4","d4","e4","f4","g4","h4",
+"a3","b3","c3","d3","e3","f3","g3","h3",
+"a2","b2","c2","d2","e2","f2","g2","h2",
+"a1","b1","c1","d1","e1","f1","g1","h1"
 
 ];
-
-
-selected=null;
-
-possible=[];
-
-turn="white";
-
-moves=0;
-
-
-draw();
-
-
-}
-
-
-
-
-
-
-
-function isWhite(p){
-
-return p && p===p.toUpperCase();
-
-}
-
-
-function isBlack(p){
-
-return p && p===p.toLowerCase();
-
-}
-
-
-
-
-
-
-
-function clearPath(from,to){
-
-
-let fx=from%8;
-
-let fy=Math.floor(from/8);
-
-
-let tx=to%8;
-
-let ty=Math.floor(to/8);
-
-
-
-let xs=Math.sign(tx-fx);
-
-let ys=Math.sign(ty-fy);
-
-
-
-let x=fx+xs;
-
-let y=fy+ys;
-
-
-
-while(x!=tx || y!=ty){
-
-
-if(state[y*8+x]!="")
-
-return false;
-
-
-x+=xs;
-y+=ys;
-
-
-}
-
-
-return true;
-
-
-}
-
-
-
-
-
-
-
-
-
-function valid(from,to,p){
-
-
-let fx=from%8;
-
-let fy=Math.floor(from/8);
-
-
-let tx=to%8;
-
-let ty=Math.floor(to/8);
-
-
-
-let dx=tx-fx;
-
-let dy=ty-fy;
-
-
-
-switch(p.toLowerCase()){
-
-
-
-case "p":
-
-
-let dir=isWhite(p)?-1:1;
-
-
-if(dx==0 &&
-dy==dir &&
-state[to]=="")
-return true;
-
-
-
-if(
-Math.abs(dx)==1 &&
-dy==dir &&
-state[to]!="" &&
-isWhite(state[to])!=isWhite(p)
-)
-
-return true;
-
-
-break;
-
-
-
-
-
-
-
-case "r":
-
-return (dx==0||dy==0)
-&&clearPath(from,to);
-
-
-
-
-
-
-case "b":
-
-return Math.abs(dx)==Math.abs(dy)
-&&clearPath(from,to);
-
-
-
-
-
-
-
-
-case "q":
-
-return (
-dx==0 ||
-dy==0 ||
-Math.abs(dx)==Math.abs(dy)
-)
-&&clearPath(from,to);
-
-
-
-
-
-
-
-case "n":
-
-
-return (
-
-Math.abs(dx)==2 &&
-Math.abs(dy)==1
-
-)||
-
-(
-
-Math.abs(dx)==1 &&
-Math.abs(dy)==2
-
-);
-
-
-
-
-
-
-
-case "k":
-
-return Math.abs(dx)<=1 &&
-Math.abs(dy)<=1;
-
-
-}
-
-
-return false;
-
-
-}
-
-
-
-
-
-
-
-
-
-function findMoves(i){
-
-
-possible=[];
-
-
-
-for(let x=0;x<64;x++){
-
-
-
-if(valid(i,x,state[i])){
-
-
-if(
-state[x]=="" ||
-isWhite(state[x])!=isWhite(state[i])
-)
-
-possible.push(x);
-
-
-
-}
-
-
-
-}
-
-
-
-}
-
-
 
 
 
@@ -482,165 +214,84 @@ possible.push(x);
 function draw(){
 
 
-
 board.innerHTML="";
 
 
 
-for(let i=0;i<64;i++){
+squares.forEach((sq,i)=>{
 
 
-
-let cell=document.createElement("div");
-
+let div=document.createElement("div");
 
 
-cell.className="cell ";
+div.className="square ";
 
 
-
-cell.className +=
-
+div.className +=
 ((Math.floor(i/8)+i)%2)
-
-?"black"
-
-:"white";
-
-
-
-
-
-if(selected==i)
-
-cell.classList.add("selected");
-
-
-
-if(possible.includes(i))
-
-cell.classList.add("move");
-
-
-
-
-
-cell.innerHTML =
-pieces[state[i]] || "";
-
-
-
-
-cell.onclick =
-()=>clickCell(i);
-
-
-
-
-board.appendChild(cell);
-
-
-}
-
-
-
-
-document.getElementById("turn")
-.innerHTML=turn;
-
-
-
-document.getElementById("moves")
-.innerHTML=moves;
-
-
-
-}
-
-
-
-
-
-
-
-
-
-function clickCell(i){
-
-
-let p=state[i];
-
-
-
-if(selected===null){
-
-
-
-if(p=="")
-return;
-
-
-
-if(turn=="white" && !isWhite(p))
-return;
-
-
-
-if(turn=="black" && !isBlack(p))
-return;
-
-
-
-selected=i;
-
-
-findMoves(i);
-
-
-draw();
-
-
-return;
-
-
-}
-
-
-
-
-
-
-if(possible.includes(i)){
-
-
-state[i]=state[selected];
-
-
-state[selected]="";
-
-
-moves++;
-
-
-turn =
-turn=="white"
 ?
-"black"
+"dark"
 :
-"white";
+"light";
+
+
+
+let piece =
+game.get(sq);
+
+
+
+if(piece){
+
+
+let p =
+piece.color=="w"
+?
+piece.type.toUpperCase()
+:
+piece.type;
+
+
+div.innerHTML =
+pieces[p];
 
 
 }
 
 
 
-selected=null;
 
-possible=[];
+if(selected==sq)
+
+div.classList.add("selected");
 
 
-draw();
 
+
+
+
+if(selected){
+
+
+let moves =
+game.moves({
+
+square:selected,
+verbose:true
+
+});
+
+
+
+moves.forEach(m=>{
+
+
+if(m.to==sq)
+
+div.classList.add("move");
+
+
+});
 
 
 }
@@ -650,27 +301,233 @@ draw();
 
 
 
-
-document.addEventListener(
-"keydown",
-e=>{
+div.onclick=()=>clickSquare(sq);
 
 
-if(e.key=="r")
+board.appendChild(div);
 
-restart();
 
 
 });
 
 
 
-restart();
+updateInfo();
 
+
+}
+
+
+
+
+
+
+
+function updateInfo(){
+
+
+if(ended)
+return;
+
+
+
+let text =
+game.turn()=="w"
+?
+"White"
+:
+"Black";
+
+
+
+if(game.isCheck())
+
+text += " ⚠ CHECK";
+
+
+
+info.innerHTML =
+"Turn: "+text;
+
+
+}
+
+
+
+
+
+
+
+
+function clickSquare(sq){
+
+
+
+if(ended)
+return;
+
+
+
+
+if(selected){
+
+
+
+let move =
+game.move({
+
+from:selected,
+
+to:sq,
+
+promotion:"q"
+
+});
+
+
+
+
+
+if(move){
+
+
+selected=null;
+
+
+checkGame();
+
+
+}
+
+else{
+
+
+selected=sq;
+
+
+}
+
+
+
+draw();
+
+return;
+
+
+}
+
+
+
+
+
+let piece =
+game.get(sq);
+
+
+
+if(!piece)
+return;
+
+
+
+if(
+game.turn()=="w" &&
+piece.color!="w"
+)
+return;
+
+
+
+if(
+game.turn()=="b" &&
+piece.color!="b"
+)
+return;
+
+
+
+selected=sq;
+
+
+draw();
+
+
+}
+
+
+
+
+
+
+
+function checkGame(){
+
+
+
+if(game.isCheckmate()){
+
+
+ended=true;
+
+
+alert(
+"♟ Checkmate!\n"+
+(game.turn()=="w"
+?
+"Black wins"
+:
+"White wins")
+);
+
+
+}
+
+
+
+else if(game.isDraw()){
+
+
+ended=true;
+
+
+alert("Draw");
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+
+function restart(){
+
+
+game.reset();
+
+
+selected=null;
+
+ended=false;
+
+
+draw();
+
+
+}
+
+
+
+
+draw();
 
 
 </script>
-
 
 
 </body>
