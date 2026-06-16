@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Pac-Man Animated</title>
+<title>Pac-Man Pro</title>
 
 <style>
 
 body{
     margin:0;
     background:#000;
+    height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
     font-family:Arial;
     color:white;
     overflow:hidden;
@@ -30,34 +31,30 @@ canvas{
     top:10px;
     left:10px;
     font-size:18px;
+    z-index:10;
 }
 
 button{
-    margin-top:6px;
-    padding:8px 14px;
     background:#22c55e;
-    border:none;
+    border:0;
     color:white;
-    border-radius:6px;
-    cursor:pointer;
+    padding:10px;
+    border-radius:8px;
+    font-size:20px;
 }
 
-
-/* MOBILE CONTROLS */
 
 .controls{
     position:absolute;
-    bottom:15px;
+    bottom:10px;
     text-align:center;
 }
 
-.controls button{
 
+.controls button{
     width:60px;
     height:60px;
-    font-size:25px;
     margin:3px;
-
 }
 
 
@@ -76,29 +73,35 @@ Score:
 
 <br>
 
+Lives:
+<span id="lives">❤️❤️❤️</span>
+
+<br>
+
 <button onclick="restart()">Restart</button>
 
 </div>
 
 
+
 <canvas id="game" width="500" height="500"></canvas>
 
 
-<!-- MOBILE BUTTONS -->
 
 <div class="controls">
 
-<button onclick="control('ArrowUp')">⬆</button>
+<button onclick="move('up')">⬆</button>
 
 <br>
 
-<button onclick="control('ArrowLeft')">⬅</button>
+<button onclick="move('left')">⬅</button>
 
-<button onclick="control('ArrowDown')">⬇</button>
+<button onclick="move('down')">⬇</button>
 
-<button onclick="control('ArrowRight')">➡</button>
+<button onclick="move('right')">➡</button>
 
 </div>
+
 
 
 
@@ -106,21 +109,36 @@ Score:
 <script>
 
 
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
+const canvas =
+document.getElementById("game");
+
+
+const ctx =
+canvas.getContext("2d");
+
 
 
 const TILE=25;
-const ROWS=20;
-const COLS=20;
 
 
-let map,pacman,ghost,score,gameOver;
+
+let pac;
+let ghosts;
+let dots;
+
+let score;
+let lives;
+
+let gameOver;
+let win;
+
 let frame=0;
 
 
 
-const layout=[
+
+const map=[
+
 
 "####################",
 "#........##........#",
@@ -143,52 +161,116 @@ const layout=[
 "#........##........#",
 "####################"
 
+
 ];
 
 
 
 
 
-function init(){
 
 
-map=layout.map(r=>r.split(""));
-
-
-pacman={
-
-x:1,
-y:1,
-
-dx:0,
-dy:0,
-
-px:1,
-py:1,
-
-progress:0
-
-};
-
-
-
-ghost={
-
-x:18,
-y:18,
-
-colorPhase:0
-
-};
-
+function restart(){
 
 
 score=0;
+
+lives=3;
+
 gameOver=false;
-frame=0;
+
+win=false;
 
 
-document.getElementById("score").innerText=0;
+pac={
+
+x:1,
+y:1,
+dx:0,
+dy:0
+
+};
+
+
+
+ghosts=[
+
+
+{
+x:18,
+y:18,
+color:"red"
+},
+
+
+{
+x:18,
+y:1,
+color:"pink"
+},
+
+
+{
+x:1,
+y:18,
+color:"cyan"
+}
+
+
+];
+
+
+
+dots=[];
+
+
+
+for(let y=0;y<20;y++){
+
+
+for(let x=0;x<20;x++){
+
+
+if(map[y][x]=="."){
+
+
+dots.push({
+x:x,
+y:y
+});
+
+
+}
+
+
+
+}
+
+
+}
+
+
+
+updateHUD();
+
+}
+
+
+
+
+
+
+
+
+function updateHUD(){
+
+
+document.getElementById("score").innerHTML=
+score;
+
+
+document.getElementById("lives").innerHTML=
+"❤️".repeat(lives);
 
 
 }
@@ -198,52 +280,56 @@ document.getElementById("score").innerText=0;
 
 
 
-function movePacman(){
 
 
-if(pacman.progress<1){
 
-pacman.progress+=0.2;
 
-return;
+function movePac(){
+
+
+
+let nx =
+pac.x + pac.dx;
+
+
+let ny =
+pac.y + pac.dy;
+
+
+
+if(map[ny][nx]!="#"){
+
+
+pac.x=nx;
+
+pac.y=ny;
+
 
 }
 
 
 
-pacman.px=pacman.x;
-pacman.py=pacman.y;
-
-
-
-let nx=pacman.x+pacman.dx;
-let ny=pacman.y+pacman.dy;
-
-
-
-if(map[ny][nx]!=="#"){
-
-pacman.x=nx;
-pacman.y=ny;
-
-}
-
-
-
-pacman.progress=0;
 
 
 
 
-if(map[pacman.y][pacman.x]==="."){
+for(let i=dots.length-1;i>=0;i--){
 
 
-map[pacman.y][pacman.x]=" ";
+
+if(
+dots[i].x==pac.x &&
+dots[i].y==pac.y
+){
+
+
+dots.splice(i,1);
+
 
 score+=10;
 
 
-document.getElementById("score").innerText=score;
+updateHUD();
 
 
 }
@@ -253,44 +339,66 @@ document.getElementById("score").innerText=score;
 
 
 
+if(dots.length==0)
+
+win=true;
+
+
+
+}
 
 
 
 
 
-function moveGhost(){
 
 
 
-let dirs=[
+
+function moveGhost(g){
+
+
+let options=[
+
 
 {x:1,y:0},
 {x:-1,y:0},
 {x:0,y:1},
 {x:0,y:-1}
 
+
 ];
 
 
 
-if(frame%10===0){
+options.sort(()=>Math.random()-0.5);
 
 
 
-let m=dirs[Math.floor(Math.random()*4)];
+for(let m of options){
 
 
 
-let nx=ghost.x+m.x;
-let ny=ghost.y+m.y;
+let nx=g.x+m.x;
+
+let ny=g.y+m.y;
 
 
 
-if(map[ny][nx]!=="#"){
+if(map[ny][nx]!="#"){
 
 
-ghost.x=nx;
-ghost.y=ny;
+
+g.x=nx;
+
+g.y=ny;
+
+
+break;
+
+
+}
+
 
 
 }
@@ -301,7 +409,50 @@ ghost.y=ny;
 
 
 
-ghost.colorPhase+=0.1;
+
+
+
+
+
+
+function collision(){
+
+
+
+for(let g of ghosts){
+
+
+
+if(
+g.x==pac.x &&
+g.y==pac.y
+){
+
+
+
+lives--;
+
+
+updateHUD();
+
+
+pac.x=1;
+
+pac.y=1;
+
+
+
+if(lives<=0)
+
+gameOver=true;
+
+
+
+}
+
+
+}
+
 
 
 }
@@ -314,41 +465,65 @@ ghost.colorPhase+=0.1;
 
 
 
-
-function drawMap(){
-
+function draw(){
 
 
-for(let y=0;y<ROWS;y++){
-
-
-for(let x=0;x<COLS;x++){
-
-
-
-if(map[y][x]==="#"){
+ctx.clearRect(
+0,
+0,
+500,
+500
+);
 
 
 
-ctx.fillStyle="#1d4ed8";
+
+
+// maze
+
+for(let y=0;y<20;y++){
+
+
+for(let x=0;x<20;x++){
+
+
+
+if(map[y][x]=="#"){
+
+
+ctx.fillStyle="#2563eb";
+
 
 ctx.fillRect(
+
 x*TILE,
 y*TILE,
 TILE,
 TILE
+
 );
 
 
 }
 
 
+}
 
-if(map[y][x]==="."){
 
+}
+
+
+
+
+
+
+// dots
 
 
 ctx.fillStyle="white";
+
+
+dots.forEach(d=>{
 
 
 ctx.beginPath();
@@ -356,10 +531,14 @@ ctx.beginPath();
 
 ctx.arc(
 
-x*TILE+12,
-y*TILE+12,
+d.x*TILE+12,
+
+d.y*TILE+12,
+
 3,
+
 0,
+
 Math.PI*2
 
 );
@@ -368,18 +547,7 @@ Math.PI*2
 ctx.fill();
 
 
-}
-
-
-
-}
-
-
-}
-
-
-
-}
+});
 
 
 
@@ -388,18 +556,11 @@ ctx.fill();
 
 
 
+// pacman
 
 
-function drawPacman(){
-
-
-
-let px=pacman.x*TILE;
-let py=pacman.y*TILE;
-
-
-
-let mouth=Math.abs(Math.sin(frame*0.2))*0.5;
+let mouth =
+Math.abs(Math.sin(frame*0.2))*0.5;
 
 
 
@@ -410,30 +571,34 @@ ctx.beginPath();
 
 
 ctx.moveTo(
-px+12,
-py+12
+
+pac.x*TILE+12,
+
+pac.y*TILE+12
+
 );
 
 
 
 ctx.arc(
 
-px+12,
-py+12,
+pac.x*TILE+12,
+
+pac.y*TILE+12,
+
 10,
+
 mouth,
+
 Math.PI*2-mouth
 
 );
 
 
 
-ctx.closePath();
-
 ctx.fill();
 
 
-}
 
 
 
@@ -441,27 +606,53 @@ ctx.fill();
 
 
 
+// ghosts
 
 
-function drawGhost(){
+ghosts.forEach(g=>{
 
 
-
-let glow=Math.sin(ghost.colorPhase)*50+200;
-
-
-
-ctx.fillStyle=
-`rgb(${glow},50,50)`;
-
+ctx.fillStyle=g.color;
 
 
 ctx.fillRect(
 
-ghost.x*TILE,
-ghost.y*TILE,
-TILE,
-TILE
+g.x*TILE,
+
+g.y*TILE,
+
+25,
+
+25
+
+);
+
+
+});
+
+
+
+
+
+
+
+
+if(gameOver || win){
+
+
+
+ctx.fillStyle="white";
+
+ctx.font="30px Arial";
+
+
+ctx.fillText(
+
+win?"YOU WIN":"GAME OVER",
+
+150,
+
+250
 
 );
 
@@ -470,30 +661,9 @@ TILE
 
 
 
-
-
-
-
-
-
-
-
-function checkCollision(){
-
-
-if(
-pacman.x===ghost.x &&
-pacman.y===ghost.y
-){
-
-
-gameOver=true;
-
-
 }
 
 
-}
 
 
 
@@ -507,57 +677,32 @@ function loop(){
 
 
 
-if(!gameOver){
+if(!gameOver&&!win){
 
 
-movePacman();
+movePac();
 
-moveGhost();
 
-checkCollision();
+
+if(frame%5==0){
+
+
+ghosts.forEach(moveGhost);
+
+
+}
+
+
+
+collision();
+
 
 
 }
 
 
 
-ctx.clearRect(
-
-0,
-0,
-canvas.width,
-canvas.height
-
-);
-
-
-
-drawMap();
-
-drawPacman();
-
-drawGhost();
-
-
-
-
-if(gameOver){
-
-
-
-ctx.fillStyle="white";
-
-ctx.font="30px Arial";
-
-ctx.fillText(
-"Game Over",
-140,
-250
-);
-
-
-
-}
+draw();
 
 
 
@@ -574,16 +719,82 @@ frame++;
 
 
 
+function move(dir){
 
 
-// KEYBOARD
+
+if(dir=="left"){
+
+pac.dx=-1;
+
+pac.dy=0;
+
+}
+
+
+
+if(dir=="right"){
+
+pac.dx=1;
+
+pac.dy=0;
+
+}
+
+
+
+if(dir=="up"){
+
+pac.dx=0;
+
+pac.dy=-1;
+
+}
+
+
+
+if(dir=="down"){
+
+pac.dx=0;
+
+pac.dy=1;
+
+}
+
+
+
+}
+
+
+
+
+
+
+
 
 document.addEventListener(
 "keydown",
 e=>{
 
 
-control(e.key);
+if(e.key=="ArrowLeft")
+
+move("left");
+
+
+if(e.key=="ArrowRight")
+
+move("right");
+
+
+if(e.key=="ArrowUp")
+
+move("up");
+
+
+if(e.key=="ArrowDown")
+
+move("down");
 
 
 });
@@ -594,80 +805,14 @@ control(e.key);
 
 
 
-// MOBILE CONTROL
 
-function control(key){
-
+restart();
 
 
-if(key==="ArrowLeft"){
-
-
-pacman.dx=-1;
-pacman.dy=0;
-
-
-}
-
-
-
-if(key==="ArrowRight"){
-
-
-pacman.dx=1;
-pacman.dy=0;
-
-
-}
-
-
-
-if(key==="ArrowUp"){
-
-
-pacman.dx=0;
-pacman.dy=-1;
-
-
-}
-
-
-
-if(key==="ArrowDown"){
-
-
-pacman.dx=0;
-pacman.dy=1;
-
-
-}
-
-
-
-}
-
-
-
-
-
-
-
-function restart(){
-
-
-init();
-
-
-}
-
-
-
-
-
-init();
-
-
-setInterval(loop,50);
+setInterval(
+loop,
+120
+);
 
 
 
@@ -675,5 +820,4 @@ setInterval(loop,50);
 
 
 </body>
-
 </html>
