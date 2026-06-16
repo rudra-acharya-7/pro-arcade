@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Pac-Man Animated</title>
 
 <style>
+
 body{
     margin:0;
     background:#000;
@@ -15,6 +17,7 @@ body{
     height:100vh;
     font-family:Arial;
     color:white;
+    overflow:hidden;
 }
 
 canvas{
@@ -38,30 +41,87 @@ button{
     border-radius:6px;
     cursor:pointer;
 }
+
+
+/* MOBILE CONTROLS */
+
+.controls{
+    position:absolute;
+    bottom:15px;
+    text-align:center;
+}
+
+.controls button{
+
+    width:60px;
+    height:60px;
+    font-size:25px;
+    margin:3px;
+
+}
+
+
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="hud">
-Score: <span id="score">0</span><br>
+
+Score:
+<span id="score">0</span>
+
+<br>
+
 <button onclick="restart()">Restart</button>
+
 </div>
+
 
 <canvas id="game" width="500" height="500"></canvas>
 
+
+<!-- MOBILE BUTTONS -->
+
+<div class="controls">
+
+<button onclick="control('ArrowUp')">⬆</button>
+
+<br>
+
+<button onclick="control('ArrowLeft')">⬅</button>
+
+<button onclick="control('ArrowDown')">⬇</button>
+
+<button onclick="control('ArrowRight')">➡</button>
+
+</div>
+
+
+
+
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
 
-const TILE = 25;
-const ROWS = 20;
-const COLS = 20;
 
-let map, pacman, ghost, score, gameOver;
-let frame = 0;
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-const layout = [
+
+const TILE=25;
+const ROWS=20;
+const COLS=20;
+
+
+let map,pacman,ghost,score,gameOver;
+let frame=0;
+
+
+
+const layout=[
+
 "####################",
 "#........##........#",
 "#.####...##...####.#",
@@ -82,187 +142,538 @@ const layout = [
 "#..................#",
 "#........##........#",
 "####################"
+
 ];
+
+
+
+
 
 function init(){
 
-    map = layout.map(r=>r.split(""));
 
-    pacman = {
-        x:1,
-        y:1,
-        dx:0,
-        dy:0,
-        px:1,
-        py:1,
-        progress:0
-    };
+map=layout.map(r=>r.split(""));
 
-    ghost = {
-        x:18,
-        y:18,
-        colorPhase:0
-    };
 
-    score = 0;
-    gameOver = false;
-    frame = 0;
+pacman={
 
-    document.getElementById("score").innerText = 0;
+x:1,
+y:1,
+
+dx:0,
+dy:0,
+
+px:1,
+py:1,
+
+progress:0
+
+};
+
+
+
+ghost={
+
+x:18,
+y:18,
+
+colorPhase:0
+
+};
+
+
+
+score=0;
+gameOver=false;
+frame=0;
+
+
+document.getElementById("score").innerText=0;
+
+
 }
 
-// ---------------- MOVEMENT (SMOOTH) ----------------
+
+
+
+
+
 function movePacman(){
 
-    if(pacman.progress < 1){
-        pacman.progress += 0.2;
-        return;
-    }
 
-    pacman.px = pacman.x;
-    pacman.py = pacman.y;
+if(pacman.progress<1){
 
-    let nx = pacman.x + pacman.dx;
-    let ny = pacman.y + pacman.dy;
+pacman.progress+=0.2;
 
-    if(map[ny][nx] !== "#"){
-        pacman.x = nx;
-        pacman.y = ny;
-    }
+return;
 
-    pacman.progress = 0;
-
-    if(map[pacman.y][pacman.x] === "."){
-        map[pacman.y][pacman.x] = " ";
-        score += 10;
-        document.getElementById("score").innerText = score;
-    }
 }
 
-// ---------------- GHOST AI ----------------
+
+
+pacman.px=pacman.x;
+pacman.py=pacman.y;
+
+
+
+let nx=pacman.x+pacman.dx;
+let ny=pacman.y+pacman.dy;
+
+
+
+if(map[ny][nx]!=="#"){
+
+pacman.x=nx;
+pacman.y=ny;
+
+}
+
+
+
+pacman.progress=0;
+
+
+
+
+if(map[pacman.y][pacman.x]==="."){
+
+
+map[pacman.y][pacman.x]=" ";
+
+score+=10;
+
+
+document.getElementById("score").innerText=score;
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+
 function moveGhost(){
 
-    let dirs = [
-        {x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}
-    ];
 
-    if(frame % 10 === 0){
-        let m = dirs[Math.floor(Math.random()*4)];
-        let nx = ghost.x + m.x;
-        let ny = ghost.y + m.y;
 
-        if(map[ny][nx] !== "#"){
-            ghost.x = nx;
-            ghost.y = ny;
-        }
-    }
+let dirs=[
 
-    ghost.colorPhase += 0.1;
+{x:1,y:0},
+{x:-1,y:0},
+{x:0,y:1},
+{x:0,y:-1}
+
+];
+
+
+
+if(frame%10===0){
+
+
+
+let m=dirs[Math.floor(Math.random()*4)];
+
+
+
+let nx=ghost.x+m.x;
+let ny=ghost.y+m.y;
+
+
+
+if(map[ny][nx]!=="#"){
+
+
+ghost.x=nx;
+ghost.y=ny;
+
+
 }
 
-// ---------------- DRAW ----------------
+
+
+}
+
+
+
+ghost.colorPhase+=0.1;
+
+
+}
+
+
+
+
+
+
+
+
+
+
 function drawMap(){
 
-    for(let y=0;y<ROWS;y++){
-        for(let x=0;x<COLS;x++){
 
-            if(map[y][x]==="#"){
-                ctx.fillStyle="#1d4ed8";
-                ctx.fillRect(x*TILE,y*TILE,TILE,TILE);
-            }
 
-            if(map[y][x]==="."){
-                ctx.fillStyle="rgba(255,255,255,0.8)";
-                ctx.beginPath();
-                ctx.arc(x*TILE+TILE/2,y*TILE+TILE/2,3,0,Math.PI*2);
-                ctx.fill();
-            }
-        }
-    }
+for(let y=0;y<ROWS;y++){
+
+
+for(let x=0;x<COLS;x++){
+
+
+
+if(map[y][x]==="#"){
+
+
+
+ctx.fillStyle="#1d4ed8";
+
+ctx.fillRect(
+x*TILE,
+y*TILE,
+TILE,
+TILE
+);
+
+
 }
 
-// PACMAN ANIMATION (mouth open/close)
+
+
+if(map[y][x]==="."){
+
+
+
+ctx.fillStyle="white";
+
+
+ctx.beginPath();
+
+
+ctx.arc(
+
+x*TILE+12,
+y*TILE+12,
+3,
+0,
+Math.PI*2
+
+);
+
+
+ctx.fill();
+
+
+}
+
+
+
+}
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
 function drawPacman(){
 
-    let px = pacman.x*TILE;
-    let py = pacman.y*TILE;
 
-    let mouth = Math.abs(Math.sin(frame*0.2))*0.5;
 
-    ctx.fillStyle="yellow";
-    ctx.beginPath();
-    ctx.moveTo(px+TILE/2,py+TILE/2);
-    ctx.arc(
-        px+TILE/2,
-        py+TILE/2,
-        10,
-        mouth,
-        Math.PI*2 - mouth
-    );
-    ctx.closePath();
-    ctx.fill();
+let px=pacman.x*TILE;
+let py=pacman.y*TILE;
+
+
+
+let mouth=Math.abs(Math.sin(frame*0.2))*0.5;
+
+
+
+ctx.fillStyle="yellow";
+
+
+ctx.beginPath();
+
+
+ctx.moveTo(
+px+12,
+py+12
+);
+
+
+
+ctx.arc(
+
+px+12,
+py+12,
+10,
+mouth,
+Math.PI*2-mouth
+
+);
+
+
+
+ctx.closePath();
+
+ctx.fill();
+
+
 }
 
-// GHOST ANIMATION (pulsing color)
+
+
+
+
+
+
+
+
 function drawGhost(){
 
-    let glow = Math.sin(ghost.colorPhase)*50 + 200;
 
-    ctx.fillStyle=`rgb(${glow},50,50)`;
 
-    ctx.fillRect(
-        ghost.x*TILE,
-        ghost.y*TILE,
-        TILE,TILE
-    );
+let glow=Math.sin(ghost.colorPhase)*50+200;
+
+
+
+ctx.fillStyle=
+`rgb(${glow},50,50)`;
+
+
+
+ctx.fillRect(
+
+ghost.x*TILE,
+ghost.y*TILE,
+TILE,
+TILE
+
+);
+
+
 }
 
-// COLLISION
+
+
+
+
+
+
+
+
+
+
 function checkCollision(){
-    if(pacman.x === ghost.x && pacman.y === ghost.y){
-        gameOver = true;
-    }
+
+
+if(
+pacman.x===ghost.x &&
+pacman.y===ghost.y
+){
+
+
+gameOver=true;
+
+
 }
 
-// ---------------- LOOP ----------------
+
+}
+
+
+
+
+
+
+
+
+
 function loop(){
 
-    if(!gameOver){
-        movePacman();
-        moveGhost();
-        checkCollision();
-    }
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    drawMap();
-    drawPacman();
-    drawGhost();
+if(!gameOver){
 
-    if(gameOver){
-        ctx.fillStyle="white";
-        ctx.font="30px Arial";
-        ctx.fillText("Game Over",140,250);
-    }
 
-    frame++;
+movePacman();
+
+moveGhost();
+
+checkCollision();
+
+
 }
 
-// CONTROLS
-document.addEventListener("keydown",e=>{
-    if(e.key==="ArrowLeft"){pacman.dx=-1;pacman.dy=0;}
-    if(e.key==="ArrowRight"){pacman.dx=1;pacman.dy=0;}
-    if(e.key==="ArrowUp"){pacman.dx=0;pacman.dy=-1;}
-    if(e.key==="ArrowDown"){pacman.dx=0;pacman.dy=1;}
+
+
+ctx.clearRect(
+
+0,
+0,
+canvas.width,
+canvas.height
+
+);
+
+
+
+drawMap();
+
+drawPacman();
+
+drawGhost();
+
+
+
+
+if(gameOver){
+
+
+
+ctx.fillStyle="white";
+
+ctx.font="30px Arial";
+
+ctx.fillText(
+"Game Over",
+140,
+250
+);
+
+
+
+}
+
+
+
+frame++;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+// KEYBOARD
+
+document.addEventListener(
+"keydown",
+e=>{
+
+
+control(e.key);
+
+
 });
 
-function restart(){
-    init();
+
+
+
+
+
+
+// MOBILE CONTROL
+
+function control(key){
+
+
+
+if(key==="ArrowLeft"){
+
+
+pacman.dx=-1;
+pacman.dy=0;
+
+
 }
 
+
+
+if(key==="ArrowRight"){
+
+
+pacman.dx=1;
+pacman.dy=0;
+
+
+}
+
+
+
+if(key==="ArrowUp"){
+
+
+pacman.dx=0;
+pacman.dy=-1;
+
+
+}
+
+
+
+if(key==="ArrowDown"){
+
+
+pacman.dx=0;
+pacman.dy=1;
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+function restart(){
+
+
 init();
+
+
+}
+
+
+
+
+
+init();
+
+
 setInterval(loop,50);
+
+
+
 </script>
 
+
 </body>
+
 </html>
