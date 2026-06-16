@@ -6,8 +6,13 @@
 <title>Bike Racing Pro</title>
 
 <style>
-body{
+*{
     margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
     overflow:hidden;
     background:#111;
     font-family:Arial,sans-serif;
@@ -24,16 +29,29 @@ canvas{
     top:10px;
     left:10px;
     color:white;
-    font-size:22px;
+    font-size:20px;
+    z-index:10;
 }
 
-#controls{
+#ui div{
+    margin-bottom:6px;
+}
+
+#topButtons{
     position:absolute;
     top:10px;
     right:10px;
-    color:white;
-    text-align:right;
-    font-size:15px;
+    display:flex;
+    gap:10px;
+    z-index:10;
+}
+
+.topBtn{
+    padding:10px 15px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
 }
 
 #gameOver{
@@ -41,17 +59,44 @@ canvas{
     top:50%;
     left:50%;
     transform:translate(-50%,-50%);
-    color:white;
     text-align:center;
+    color:white;
     display:none;
+    z-index:20;
 }
 
-button{
+#gameOver button{
     padding:12px 25px;
     font-size:18px;
     border:none;
     border-radius:8px;
     cursor:pointer;
+}
+
+#mobileControls{
+    position:fixed;
+    bottom:20px;
+    width:100%;
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    z-index:15;
+}
+
+#mobileControls button{
+    width:80px;
+    height:80px;
+    border:none;
+    border-radius:50%;
+    font-size:35px;
+    background:#222;
+    color:white;
+}
+
+@media(min-width:900px){
+    #mobileControls{
+        display:none;
+    }
 }
 </style>
 </head>
@@ -61,143 +106,188 @@ button{
     <div id="score">Score: 0</div>
     <div id="lives">❤️❤️❤️</div>
     <div id="high">High: 0</div>
+    <div>Nitro ⚡</div>
 </div>
 
-<div id="controls">
-    A/D or ←/→ = Move<br>
-    W or ↑ or Space = Nitro ⚡<br>
-    Enter = Restart
+<div id="topButtons">
+    <button class="topBtn" onclick="togglePause()">⏸️</button>
+    <button class="topBtn" onclick="toggleTheme()">🌙</button>
 </div>
 
 <div id="gameOver">
     <h1>GAME OVER</h1>
+    <br>
     <button onclick="restart()">Restart</button>
 </div>
 
 <canvas id="game" width="400" height="700"></canvas>
 
+<div id="mobileControls">
+    <button id="leftBtn">⬅️</button>
+    <button id="nitroBtn">⚡</button>
+    <button id="rightBtn">➡️</button>
+</div>
+
 <script>
 
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-let score = 0;
-let lives = 3;
-let nitro = 100;
-let roadOffset = 0;
-let gameOver = false;
+let score=0;
+let lives=3;
+let nitro=100;
+let roadOffset=0;
+let gameOver=false;
+let paused=false;
 
-let highScore =
-parseInt(localStorage.getItem("bikeHigh")) || 0;
+let highScore=
+parseInt(localStorage.getItem("bikeHigh"))||0;
 
-document.getElementById("high").innerHTML =
-"High: " + highScore;
+document.getElementById("high").innerHTML=
+"High: "+highScore;
 
-const bike = {
-    x:180,
+const bike={
+    x:175,
     y:580,
-    speed:7
+    speed:8
 };
 
-let cars = [];
-let coins = [];
-let keys = {};
+let cars=[];
+let coins=[];
+let trees=[];
+let keys={};
 
 document.addEventListener("keydown",e=>{
-
-    keys[e.key] = true;
+    keys[e.key]=true;
 
     if(gameOver && e.key==="Enter"){
         restart();
     }
-
 });
 
 document.addEventListener("keyup",e=>{
-    keys[e.key] = false;
+    keys[e.key]=false;
 });
+
+let leftPressed=false;
+let rightPressed=false;
+let nitroPressed=false;
+
+leftBtn.addEventListener("touchstart",()=>leftPressed=true);
+leftBtn.addEventListener("touchend",()=>leftPressed=false);
+
+rightBtn.addEventListener("touchstart",()=>rightPressed=true);
+rightBtn.addEventListener("touchend",()=>rightPressed=false);
+
+nitroBtn.addEventListener("touchstart",()=>nitroPressed=true);
+nitroBtn.addEventListener("touchend",()=>nitroPressed=false);
 
 function spawnCar(){
 
+    const vehicles=[
+        "🚗","🚕","🚙","🚓","🚚"
+    ];
+
     cars.push({
-        x:Math.random() * 320 + 20,
+        x:Math.random()*320+20,
         y:-100,
         w:50,
-        h:80
+        h:80,
+        emoji:vehicles[
+            Math.floor(Math.random()*vehicles.length)
+        ]
     });
 }
 
 function spawnCoin(){
-
     coins.push({
-        x:Math.random() * 320 + 20,
+        x:Math.random()*320+20,
+        y:-50
+    });
+}
+
+function spawnTree(){
+    trees.push({
+        x:Math.random()<0.5 ? 20 : 360,
         y:-50
     });
 }
 
 setInterval(()=>{
-
-    if(!gameOver){
+    if(!gameOver && !paused){
 
         spawnCar();
 
-        if(Math.random()<0.5){
+        if(Math.random()<0.6){
             spawnCoin();
         }
-    }
 
-},1000);
+        if(Math.random()<0.7){
+            spawnTree();
+        }
+    }
+},900);
 
 function update(){
 
-    if(gameOver) return;
+    if(gameOver || paused) return;
 
-    let speed = 8;
+    let speed=8;
 
     if(
-        keys["w"] ||
-        keys["W"] ||
-        keys["ArrowUp"] ||
-        keys[" "]
+        keys["ArrowUp"]||
+        keys[" "]||
+        keys["w"]||
+        nitroPressed
     ){
-
-        if(nitro > 0){
-
-            speed = 16;
-            nitro -= 0.5;
+        if(nitro>0){
+            speed=16;
+            nitro-=0.6;
         }
     }
 
     if(
-        keys["a"] ||
-        keys["A"] ||
-        keys["ArrowLeft"]
+        keys["ArrowLeft"]||
+        keys["a"]||
+        leftPressed
     ){
-        bike.x -= bike.speed;
+        bike.x-=bike.speed;
     }
 
     if(
-        keys["d"] ||
-        keys["D"] ||
-        keys["ArrowRight"]
+        keys["ArrowRight"]||
+        keys["d"]||
+        rightPressed
     ){
-        bike.x += bike.speed;
+        bike.x+=bike.speed;
     }
 
-    bike.x = Math.max(
+    bike.x=Math.max(
         10,
-        Math.min(canvas.width - 60,bike.x)
+        Math.min(canvas.width-60,bike.x)
     );
+
+    cars.forEach(car=>{
+        car.y+=speed;
+    });
+
+    coins.forEach(coin=>{
+        coin.y+=speed;
+    });
+
+    trees.forEach(tree=>{
+        tree.y+=speed;
+    });
 
     for(let i=cars.length-1;i>=0;i--){
 
-        cars[i].y += speed;
+        let c=cars[i];
 
         if(
-            bike.x < cars[i].x + cars[i].w &&
-            bike.x + 50 > cars[i].x &&
-            bike.y < cars[i].y + cars[i].h &&
-            bike.y + 50 > cars[i].y
+            bike.x<c.x+c.w &&
+            bike.x+50>c.x &&
+            bike.y<c.y+c.h &&
+            bike.y+50>c.y
         ){
 
             cars.splice(i,1);
@@ -211,7 +301,7 @@ function update(){
             }
         }
 
-        if(cars[i] && cars[i].y > canvas.height){
+        if(c.y>canvas.height){
 
             cars.splice(i,1);
 
@@ -223,45 +313,60 @@ function update(){
 
     for(let i=coins.length-1;i>=0;i--){
 
-        coins[i].y += speed;
+        const coin=coins[i];
 
         if(
-            Math.abs(coins[i].x-bike.x)<40 &&
-            Math.abs(coins[i].y-bike.y)<40
+            Math.abs(coin.x-bike.x)<40 &&
+            Math.abs(coin.y-bike.y)<40
         ){
 
             coins.splice(i,1);
 
-            score += 5;
+            score+=5;
 
-            nitro = Math.min(
+            nitro=Math.min(
                 100,
-                nitro + 10
+                nitro+10
             );
 
             updateUI();
         }
     }
 
-    nitro = Math.min(100,nitro+0.03);
+    nitro=Math.min(
+        100,
+        nitro+0.05
+    );
 }
 
 function drawRoad(){
 
-    ctx.fillStyle="#333";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#444";
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-    roadOffset += 10;
+    ctx.fillStyle="#2c2c2c";
+    ctx.fillRect(50,0,300,700);
+
+    roadOffset+=10;
 
     ctx.fillStyle="white";
 
-    for(let y=-60;y<canvas.height;y+=80){
+    for(
+        let y=-80;
+        y<700;
+        y+=90
+    ){
 
         ctx.fillRect(
             195,
-            y + (roadOffset % 80),
+            y+(roadOffset%90),
             10,
-            40
+            50
         );
     }
 }
@@ -270,36 +375,63 @@ function draw(){
 
     drawRoad();
 
-    ctx.font="50px Arial";
-    ctx.fillText("🏍️",bike.x,bike.y);
+    trees.forEach(tree=>{
+        ctx.font="35px Arial";
+        ctx.fillText(
+            "🌳",
+            tree.x,
+            tree.y
+        );
+    });
+
+    ctx.font="45px Arial";
+    ctx.fillText(
+        "🏍️",
+        bike.x,
+        bike.y
+    );
 
     cars.forEach(car=>{
-        ctx.fillText("🚗",car.x,car.y);
+        ctx.font="45px Arial";
+        ctx.fillText(
+            car.emoji,
+            car.x,
+            car.y
+        );
     });
 
     coins.forEach(coin=>{
-        ctx.fillText("🪙",coin.x,coin.y);
+        ctx.font="30px Arial";
+        ctx.fillText(
+            "🪙",
+            coin.x,
+            coin.y
+        );
     });
 
     ctx.fillStyle="cyan";
-
     ctx.fillRect(
         10,
-        650,
+        660,
         nitro*2,
         15
     );
 
     ctx.strokeStyle="white";
-    ctx.strokeRect(10,650,200,15);
+    ctx.strokeRect(
+        10,
+        660,
+        200,
+        15
+    );
 
-    if(gameOver){
+    if(paused){
 
         ctx.fillStyle="white";
         ctx.font="40px Arial";
         ctx.fillText(
-            "GAME OVER",
-            70,
+            "PAUSED",
+            120,
             300
         );
     }
@@ -308,16 +440,16 @@ function draw(){
 function updateUI(){
 
     document.getElementById("score")
-    .innerHTML =
-    "Score: " + score;
+    .innerHTML=
+    "Score: "+score;
 
     document.getElementById("lives")
-    .innerHTML =
+    .innerHTML=
     "❤️".repeat(lives);
 
-    if(score > highScore){
+    if(score>highScore){
 
-        highScore = score;
+        highScore=score;
 
         localStorage.setItem(
             "bikeHigh",
@@ -325,34 +457,51 @@ function updateUI(){
         );
 
         document.getElementById("high")
-        .innerHTML =
-        "High: " + highScore;
+        .innerHTML=
+        "High: "+highScore;
+    }
+}
+
+function togglePause(){
+    paused=!paused;
+}
+
+function toggleTheme(){
+
+    if(document.body.style.filter==="invert(1)"){
+        document.body.style.filter="none";
+    }else{
+        document.body.style.filter="invert(1)";
     }
 }
 
 function endGame(){
 
-    gameOver = true;
+    gameOver=true;
 
-    document.getElementById("gameOver")
-    .style.display = "block";
+    document.getElementById(
+        "gameOver"
+    ).style.display="block";
 }
 
 function restart(){
 
-    score = 0;
-    lives = 3;
-    nitro = 100;
+    score=0;
+    lives=3;
+    nitro=100;
 
-    cars = [];
-    coins = [];
+    cars=[];
+    coins=[];
+    trees=[];
 
-    bike.x = 180;
+    bike.x=175;
 
-    gameOver = false;
+    gameOver=false;
+    paused=false;
 
-    document.getElementById("gameOver")
-    .style.display = "none";
+    document.getElementById(
+        "gameOver"
+    ).style.display="none";
 
     updateUI();
 }
@@ -369,6 +518,5 @@ updateUI();
 loop();
 
 </script>
-
 </body>
 </html>

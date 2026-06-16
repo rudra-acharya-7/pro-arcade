@@ -1,15 +1,16 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fruit Ninja Pro</title>
+<title>Fruit Ninja</title>
 
 <style>
 body{
     margin:0;
     overflow:hidden;
-    background:#111;
+    background:linear-gradient(#111,#333);
     font-family:Arial,sans-serif;
 }
 
@@ -17,13 +18,13 @@ canvas{
     display:block;
 }
 
-#hud{
+#ui{
     position:absolute;
-    top:15px;
-    left:15px;
+    top:10px;
+    left:10px;
     color:white;
     font-size:24px;
-    z-index:10;
+    z-index:100;
 }
 
 #gameOver{
@@ -31,34 +32,31 @@ canvas{
     top:50%;
     left:50%;
     transform:translate(-50%,-50%);
-    color:white;
     text-align:center;
+    color:white;
     display:none;
-}
-
-#gameOver h1{
-    font-size:50px;
 }
 
 button{
     padding:12px 25px;
-    font-size:20px;
+    border:none;
+    border-radius:8px;
+    font-size:18px;
     cursor:pointer;
 }
 </style>
 </head>
 <body>
 
-<div id="hud">
-<div id="score">Score: 0</div>
-<div id="lives">Lives: ❤️❤️❤️</div>
-<div id="high">High Score: 0</div>
+<div id="ui">
+    Score: <span id="score">0</span><br>
+    Lives: <span id="lives">❤️❤️❤️</span><br>
+    High: <span id="high">0</span>
 </div>
 
 <div id="gameOver">
-<h1>GAME OVER</h1>
-<p id="finalScore"></p>
-<button onclick="restart()">Play Again</button>
+    <h1>GAME OVER</h1>
+    <button onclick="restart()">Play Again</button>
 </div>
 
 <canvas id="game"></canvas>
@@ -68,57 +66,55 @@ button{
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
 
-let fruits = [];
 let score = 0;
 let lives = 3;
-let gameRunning = true;
-
-let combo = 0;
-let comboTimer = 0;
-
-let mouse = {
-    x:0,
-    y:0,
-    down:false
-};
-
-let trail = [];
-
-const scoreDiv = document.getElementById("score");
-const livesDiv = document.getElementById("lives");
-const highDiv = document.getElementById("high");
-const gameOverDiv = document.getElementById("gameOver");
-const finalScoreDiv = document.getElementById("finalScore");
+let gameOver = false;
 
 let highScore =
-parseInt(localStorage.getItem("fruitNinjaHigh")) || 0;
+parseInt(localStorage.getItem("fruitHigh")) || 0;
 
-highDiv.innerText = "High Score: " + highScore;
+document.getElementById("high").textContent = highScore;
+
+const fruits = [];
+const trail = [];
 
 class Fruit{
 
     constructor(){
 
-        this.radius = 25 + Math.random()*15;
-
-        this.x = Math.random()*canvas.width;
+        this.x = 80 + Math.random() * (canvas.width - 160);
 
         this.y = canvas.height + 50;
 
-        this.vx = (Math.random()-0.5)*8;
+        this.vx = (Math.random() - 0.5) * 6;
 
-        this.vy = -(14 + Math.random()*6);
+        this.vy = -(16 + Math.random() * 6);
 
-        this.gravity = 0.25;
+        this.radius = 35;
 
-        this.isBomb = Math.random() < 0.12;
+        this.type =
+        Math.random() < 0.15
+        ? "bomb"
+        : "fruit";
 
-        this.color =
-        ["red","orange","yellow","lime","cyan","pink"]
-        [Math.floor(Math.random()*6)];
+        const icons = [
+            "🍎","🍉","🍌","🍓",
+            "🍍","🥝","🍒","🍑"
+        ];
+
+        this.icon =
+        this.type === "bomb"
+        ? "💣"
+        : icons[Math.floor(Math.random()*icons.length)];
+
+        this.missed = false;
     }
 
     update(){
@@ -126,281 +122,64 @@ class Fruit{
         this.x += this.vx;
         this.y += this.vy;
 
-        this.vy += this.gravity;
+        this.vy += 0.35;
     }
 
     draw(){
 
-        ctx.beginPath();
+        ctx.font = "55px Arial";
 
-        ctx.arc(
-            this.x,
-            this.y,
-            this.radius,
-            0,
-            Math.PI*2
+        ctx.fillText(
+            this.icon,
+            this.x - 25,
+            this.y + 20
         );
-
-        ctx.fillStyle =
-        this.isBomb ? "#222" : this.color;
-
-        ctx.fill();
-
-        if(this.isBomb){
-
-            ctx.fillStyle="white";
-            ctx.font="20px Arial";
-            ctx.fillText(
-                "💣",
-                this.x-10,
-                this.y+7
-            );
-        }
     }
 }
 
 function spawnFruit(){
 
-    if(!gameRunning) return;
+    if(gameOver) return;
 
     fruits.push(new Fruit());
+
+    setTimeout(
+        spawnFruit,
+        800 + Math.random()*1200
+    );
 }
-
-setInterval(()=>{
-    if(gameRunning){
-
-        spawnFruit();
-
-        if(Math.random()<0.4){
-            spawnFruit();
-        }
-    }
-},700);
-
-function updateHUD(){
-
-    scoreDiv.innerText =
-    "Score: " + score;
-
-    livesDiv.innerText =
-    "Lives: " + "❤️".repeat(lives);
-
-    highDiv.innerText =
-    "High Score: " + highScore;
-}
-
-function loseLife(){
-
-    lives--;
-
-    if(lives <= 0){
-
-        gameOver();
-
-    }
-
-    updateHUD();
-}
-
-function gameOver(){
-
-    gameRunning = false;
-
-    if(score > highScore){
-
-        highScore = score;
-
-        localStorage.setItem(
-            "fruitNinjaHigh",
-            highScore
-        );
-    }
-
-    finalScoreDiv.innerText =
-    "Final Score: " + score;
-
-    gameOverDiv.style.display =
-    "block";
-}
-
-function restart(){
-
-    fruits = [];
-
-    score = 0;
-
-    lives = 3;
-
-    combo = 0;
-
-    comboTimer = 0;
-
-    trail = [];
-
-    gameRunning = true;
-
-    gameOverDiv.style.display =
-    "none";
-
-    updateHUD();
-}
-
-function sliceCheck(){
-
-    for(
-        let i=fruits.length-1;
-        i>=0;
-        i--
-    ){
-
-        let f = fruits[i];
-
-        let dx =
-        mouse.x - f.x;
-
-        let dy =
-        mouse.y - f.y;
-
-        let dist =
-        Math.sqrt(dx*dx + dy*dy);
-
-        if(dist < f.radius+15){
-
-            if(f.isBomb){
-
-                gameOver();
-                return;
-            }
-
-            fruits.splice(i,1);
-
-            score++;
-
-            combo++;
-
-            comboTimer = 60;
-
-            if(combo >= 3){
-
-                score += 5;
-            }
-
-            updateHUD();
-        }
-    }
-}
-
-canvas.addEventListener(
-"mousedown",
-()=>mouse.down=true
-);
-
-canvas.addEventListener(
-"mouseup",
-()=>mouse.down=false
-);
-
-canvas.addEventListener(
-"mousemove",
-e=>{
-
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-
-    trail.push({
-        x:mouse.x,
-        y:mouse.y
-    });
-
-    if(trail.length > 20){
-        trail.shift();
-    }
-
-    if(mouse.down){
-        sliceCheck();
-    }
-});
-
-canvas.addEventListener(
-"touchmove",
-e=>{
-
-    e.preventDefault();
-
-    const t =
-    e.touches[0];
-
-    mouse.x = t.clientX;
-    mouse.y = t.clientY;
-
-    mouse.down = true;
-
-    sliceCheck();
-});
 
 function update(){
 
-    if(!gameRunning) return;
-
-    for(
-        let i=fruits.length-1;
-        i>=0;
-        i--
-    ){
+    for(let i=fruits.length-1;i>=0;i--){
 
         fruits[i].update();
 
         if(
             fruits[i].y >
-            canvas.height+100
+            canvas.height + 100
         ){
 
-            if(!fruits[i].isBomb){
+            if(
+                fruits[i].type === "fruit"
+            ){
 
-                loseLife();
+                lives--;
+
+                updateUI();
+
+                if(lives <= 0){
+                    endGame();
+                }
             }
 
             fruits.splice(i,1);
         }
     }
 
-    if(comboTimer > 0){
-
-        comboTimer--;
-
-    }else{
-
-        combo = 0;
+    if(trail.length > 0){
+        trail.shift();
     }
-}
-
-function drawTrail(){
-
-    if(trail.length < 2) return;
-
-    ctx.beginPath();
-
-    for(
-        let i=0;
-        i<trail.length;
-        i++
-    ){
-
-        let p = trail[i];
-
-        if(i===0){
-
-            ctx.moveTo(p.x,p.y);
-
-        }else{
-
-            ctx.lineTo(p.x,p.y);
-        }
-    }
-
-    ctx.strokeStyle="white";
-    ctx.lineWidth=4;
-    ctx.stroke();
 }
 
 function draw(){
@@ -412,48 +191,179 @@ function draw(){
         canvas.height
     );
 
-    drawTrail();
+    fruits.forEach(fruit=>{
+        fruit.draw();
+    });
 
-    fruits.forEach(
-        fruit=>fruit.draw()
+    if(trail.length > 1){
+
+        ctx.beginPath();
+
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 6;
+
+        ctx.moveTo(
+            trail[0].x,
+            trail[0].y
+        );
+
+        for(let i=1;i<trail.length;i++){
+
+            ctx.lineTo(
+                trail[i].x,
+                trail[i].y
+            );
+        }
+
+        ctx.stroke();
+    }
+}
+
+function slice(x,y){
+
+    if(gameOver) return;
+
+    for(let i=fruits.length-1;i>=0;i--){
+
+        let dx =
+        x - fruits[i].x;
+
+        let dy =
+        y - fruits[i].y;
+
+        let distance =
+        Math.sqrt(dx*dx + dy*dy);
+
+        if(distance < 45){
+
+            if(
+                fruits[i].type === "bomb"
+            ){
+
+                endGame();
+                return;
+            }
+
+            score++;
+
+            if(score > highScore){
+
+                highScore = score;
+
+                localStorage.setItem(
+                    "fruitHigh",
+                    highScore
+                );
+            }
+
+            fruits.splice(i,1);
+
+            updateUI();
+        }
+    }
+}
+
+function addTrail(x,y){
+
+    trail.push({x,y});
+
+    if(trail.length > 15){
+        trail.shift();
+    }
+}
+
+canvas.addEventListener(
+"mousemove",
+e=>{
+
+    addTrail(
+        e.clientX,
+        e.clientY
     );
 
-    if(combo >= 3){
+    if(e.buttons === 1){
 
-        ctx.fillStyle="gold";
-
-        ctx.font="30px Arial";
-
-        ctx.fillText(
-            "COMBO x" + combo,
-            canvas.width/2-80,
-            60
+        slice(
+            e.clientX,
+            e.clientY
         );
     }
+});
+
+canvas.addEventListener(
+"touchmove",
+e=>{
+
+    e.preventDefault();
+
+    const touch =
+    e.touches[0];
+
+    addTrail(
+        touch.clientX,
+        touch.clientY
+    );
+
+    slice(
+        touch.clientX,
+        touch.clientY
+    );
+
+},
+{passive:false}
+);
+
+function updateUI(){
+
+    document.getElementById(
+    "score").textContent = score;
+
+    document.getElementById(
+    "lives").textContent =
+    "❤️".repeat(lives);
+
+    document.getElementById(
+    "high").textContent =
+    highScore;
+}
+
+function endGame(){
+
+    gameOver = true;
+
+    document.getElementById(
+    "gameOver"
+    ).style.display = "block";
+}
+
+function restart(){
+
+    score = 0;
+    lives = 3;
+
+    fruits.length = 0;
+    trail.length = 0;
+
+    gameOver = false;
+
+    document.getElementById(
+    "gameOver"
+    ).style.display = "none";
+
+    updateUI();
 }
 
 function loop(){
 
     update();
-
     draw();
 
     requestAnimationFrame(loop);
 }
 
-updateHUD();
+restart();
+spawnFruit();
 loop();
-
-window.addEventListener(
-"resize",
-()=>{
-
-    canvas.width =
-    window.innerWidth;
-
-    canvas.height =
-    window.innerHeight;
-});
 
 </script>
 
