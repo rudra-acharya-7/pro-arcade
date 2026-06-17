@@ -5,215 +5,484 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pro Arcade</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#22c55e">
-
 <style>
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
 }
 
 body{
-    min-height:100vh;
-    display:flex;
-    background:linear-gradient(135deg,#050816,#0f172a);
-    color:white;
+background:#0f172a;
+color:white;
+display:flex;
+min-height:100vh;
 }
 
-/* SIDEBAR */
 .sidebar{
-    width:240px;
-    background:rgba(255,255,255,0.05);
-    backdrop-filter:blur(12px);
-    padding:20px;
-    display:flex;
-    flex-direction:column;
-    gap:15px;
+width:220px;
+background:#111827;
+padding:20px;
 }
 
 .logo{
-    font-size:24px;
-    font-weight:bold;
-    color:#22c55e;
+font-size:24px;
+font-weight:bold;
+color:#22c55e;
+margin-bottom:20px;
 }
 
 .nav{
-    padding:10px;
-    border-radius:10px;
-    cursor:pointer;
+padding:12px;
+margin-bottom:10px;
+background:#1f2937;
+border-radius:8px;
+cursor:pointer;
 }
 
 .nav:hover{
-    background:rgba(34,197,94,0.2);
+background:#22c55e;
 }
 
-/* MAIN */
 .main{
-    flex:1;
-    padding:20px;
+flex:1;
+padding:20px;
 }
 
-/* TOPBAR */
 .topbar{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:20px;
+display:flex;
+gap:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
 }
 
-.topbar input{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    border:none;
+#search{
+flex:1;
+padding:12px;
+border:none;
+border-radius:8px;
 }
 
-/* GRID */
+#category{
+padding:12px;
+border:none;
+border-radius:8px;
+}
+
 .games{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:20px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
 }
 
-/* CARD */
 .card{
-    background:rgba(255,255,255,0.06);
-    border:1px solid rgba(255,255,255,0.1);
-    padding:20px;
-    border-radius:15px;
-    position:relative;
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+text-align:center;
 }
 
 .card:hover{
-    transform:translateY(-5px);
-    border-color:#22c55e;
+transform:translateY(-5px);
 }
 
-.icon{font-size:40px;}
+.icon{
+font-size:50px;
+}
 
 .play-btn{
-    margin-top:10px;
-    width:100%;
-    padding:10px;
-    border:none;
-    border-radius:10px;
-    background:#22c55e;
-    font-weight:bold;
-    cursor:pointer;
+width:100%;
+margin-top:10px;
+padding:10px;
+border:none;
+border-radius:8px;
+background:#22c55e;
+font-weight:bold;
+cursor:pointer;
+}
+
+.fav-btn{
+width:100%;
+margin-top:8px;
+padding:8px;
+border:none;
+border-radius:8px;
+background:#f59e0b;
+cursor:pointer;
+}
+
+@media(max-width:768px){
+
+body{
+flex-direction:column;
+}
+
+.sidebar{
+width:100%;
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.logo{
+width:100%;
+}
 }
 </style>
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
-    <div class="logo">🎮 PRO ARCADE</div>
 
-    <div class="nav">🏠 Home</div>
-    <div class="nav">🔥 Trending</div>
-    <div class="nav">⭐ Favorites</div>
-    <div class="nav">🎲 Categories</div>
+<div class="logo">🎮 PRO ARCADE</div>
+
+<div class="nav" onclick="showAllGames()">🏠 Home</div>
+
+<div class="nav" onclick="showTrending()">🔥 Trending</div>
+
+<div class="nav" onclick="showFavorites()">⭐ Favorites</div>
+
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
 <div class="topbar">
-    <input id="search" placeholder="Search games...">
+
+<input
+type="text"
+id="search"
+placeholder="Search games..."
+>
+
+<select id="category">
+<option value="all">All Categories</option>
+<option value="arcade">Arcade</option>
+<option value="puzzle">Puzzle</option>
+<option value="board">Board</option>
+<option value="action">Action</option>
+</select>
+
 </div>
+<section class="games" id="games">
 
-<section class="games">
-
-<div class="card">
+<div class="card" data-category="arcade">
 <div class="icon">🐍</div>
 <h2>Snake</h2>
-<button class="play-btn" onclick="openGame('games/snake.html')">Play</button>
+<button class="play-btn" onclick="openGame('Snake','games/snake.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Snake')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="puzzle">
 <div class="icon">🧩</div>
 <h2>Tetris</h2>
-<button class="play-btn" onclick="openGame('games/tetris.html')">Play</button>
+<button class="play-btn" onclick="openGame('Tetris','games/tetris.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Tetris')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="arcade">
 <div class="icon">👻</div>
 <h2>Pacman</h2>
-<button class="play-btn" onclick="openGame('games/pacman.html')">Play</button>
+<button class="play-btn" onclick="openGame('Pacman','games/pacman.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Pacman')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="board">
 <div class="icon">♟️</div>
 <h2>Chess</h2>
-<button class="play-btn" onclick="openGame('games/chess.html')">Play</button>
+<button class="play-btn" onclick="openGame('Chess','games/chess.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Chess')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="puzzle">
 <div class="icon">🔢</div>
 <h2>Sudoku</h2>
-<button class="play-btn" onclick="openGame('games/sudoku.html')">Play</button>
+<button class="play-btn" onclick="openGame('Sudoku','games/sudoku.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Sudoku')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="puzzle">
 <div class="icon">🧠</div>
 <h2>Memory Match</h2>
-<button class="play-btn" onclick="openGame('games/memory-match.html')">Play</button>
+<button class="play-btn" onclick="openGame('Memory Match','games/memory-match.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Memory Match')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="action">
 <div class="icon">🧱</div>
 <h2>Breakout</h2>
-<button class="play-btn" onclick="openGame('games/breakout.html')">Play</button>
+<button class="play-btn" onclick="openGame('Breakout','games/breakout.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Breakout')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="board">
 <div class="icon">❌</div>
 <h2>Tic Tac Toe</h2>
-<button class="play-btn" onclick="openGame('games/tic-tac-toe.html')">Play</button>
+<button class="play-btn" onclick="openGame('Tic Tac Toe','games/tic-tac-toe.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Tic Tac Toe')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="action">
 <div class="icon">🚀</div>
 <h2>Space Shooter</h2>
-<button class="play-btn" onclick="openGame('games/space-shooter.html')">Play</button>
+<button class="play-btn" onclick="openGame('Space Shooter','games/space-shooter.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Space Shooter')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="puzzle">
 <div class="icon">🎲</div>
 <h2>2048</h2>
-<button class="play-btn" onclick="openGame('games/2048.html')">Play</button>
+<button class="play-btn" onclick="openGame('2048','games/2048.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('2048')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="action">
 <div class="icon">🍉</div>
 <h2>Fruit Ninja</h2>
-<button class="play-btn" onclick="openGame('games/FruitNinja.html')">Play</button>
+<button class="play-btn" onclick="openGame('Fruit Ninja','games/FruitNinja.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Fruit Ninja')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="action">
 <div class="icon">🏍️</div>
 <h2>Bike Racing</h2>
-<button class="play-btn" onclick="openGame('games/bike-racing.html')">Play</button>
+<button class="play-btn" onclick="openGame('Bike Racing','games/bike-racing.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Bike Racing')">⭐ Favorite</button>
 </div>
 
-<div class="card">
+<div class="card" data-category="arcade">
 <div class="icon">🐦</div>
 <h2>Flappy Bird</h2>
-<button class="play-btn" onclick="openGame('games/flappybird.html')">Play</button>
+<button class="play-btn" onclick="openGame('Flappy Bird','games/flappybird.html')">Play</button>
+<button class="fav-btn" onclick="toggleFavorite('Flappy Bird')">⭐ Favorite</button>
 </div>
 
 </section>
+
 </div>
 
 <script>
-/* FIXED NAVIGATION (IMPORTANT) */
-function openGame(file){
+function openGame(gameName,file){
+
+    let plays =
+    Number(localStorage.getItem(gameName) || 0);
+
+    localStorage.setItem(
+        gameName,
+        plays + 1
+    );
+
     window.location.href = file;
 }
+
+/* SEARCH */
+
+document.getElementById("search")
+.addEventListener("keyup", function(){
+
+    let value =
+    this.value.toLowerCase();
+
+    document
+    .querySelectorAll(".card")
+    .forEach(card=>{
+
+        let text =
+        card.querySelector("h2")
+        .textContent
+        .toLowerCase();
+
+        card.style.display =
+        text.includes(value)
+        ? "block"
+        : "none";
+    });
+});
+
+/* CATEGORY */
+
+document.getElementById("category")
+.addEventListener("change", function(){
+
+    let cat = this.value;
+
+    document
+    .querySelectorAll(".card")
+    .forEach(card=>{
+
+        card.style.display =
+        cat === "all" ||
+        card.dataset.category === cat
+        ? "block"
+        : "none";
+    });
+});
+
+/* HOME */
+
+function showAllGames(){
+
+    document
+    .querySelectorAll(".card")
+    .forEach(card=>{
+document.getElementById("category").value = "all";
+document.getElementById("search").value = "";
+        card.style.display = "block";
+    });
+}
+
+/* FAVORITES */
+
+function toggleFavorite(game){
+
+    let favs = JSON.parse(
+        localStorage.getItem("favorites") || "[]"
+    );
+
+    if(favs.includes(game)){
+
+        favs = favs.filter(
+            item => item !== game
+        );
+
+    }else{
+
+        favs.push(game);
+    }
+
+    localStorage.setItem(
+        "favorites",
+        JSON.stringify(favs)
+    );
+
+    updateFavoriteButtons();
+}
+
+function updateFavoriteButtons(){
+
+    let favs = JSON.parse(
+        localStorage.getItem("favorites") || "[]"
+    );
+
+    document.querySelectorAll(".fav-btn")
+    .forEach(btn=>{
+
+        let game =
+        btn.parentElement
+        .querySelector("h2")
+        .textContent;
+
+        btn.textContent =
+        favs.includes(game)
+        ? "⭐ Remove Favorite"
+        : "⭐ Add Favorite";
+    });
+}
+function showFavorites(){
+
+    let favs = JSON.parse(
+        localStorage.getItem("favorites") || "[]"
+    );
+
+    if(favs.length === 0){
+
+        let allGames = [];
+
+        document
+        .querySelectorAll(".card h2")
+        .forEach(game=>{
+
+            allGames.push(
+                game.textContent
+            );
+        });
+
+        let choice = prompt(
+            "No favorites yet.\n\nAvailable Games:\n\n" +
+            allGames.join("\n") +
+            "\n\nType a game name to add:"
+        );
+
+        if(choice){
+
+            let gameFound =
+            allGames.find(
+                game =>
+                game.toLowerCase() ===
+                choice.toLowerCase()
+            );
+
+            if(gameFound){
+
+                favs.push(gameFound);
+
+                localStorage.setItem(
+                    "favorites",
+                    JSON.stringify(favs)
+                );
+
+                updateFavoriteButtons();
+
+                alert(
+                    gameFound +
+                    " added to favorites!"
+                );
+
+            }else{
+
+                alert("Game not found.");
+            }
+        }
+
+        return;
+    }
+
+    document
+    .querySelectorAll(".card")
+    .forEach(card=>{
+
+        let game =
+        card.querySelector("h2")
+        .textContent;
+
+        card.style.display =
+        favs.includes(game)
+        ? "block"
+        : "none";
+    });
+}
+/* TRENDING */
+
+function showTrending(){
+
+    let found = false;
+
+    document
+    .querySelectorAll(".card")
+    .forEach(card=>{
+
+        let game =
+        card.querySelector("h2")
+        .textContent;
+
+        let plays =
+        Number(localStorage.getItem(game) || 0);
+
+        if(plays > 0){
+            card.style.display = "block";
+            found = true;
+        }else{
+            card.style.display = "none";
+        }
+    });
+
+    if(!found){
+        alert("Play some games first.");
+    }
+}
+
+updateFavoriteButtons();
 </script>
 
 </body>
-</html> 
+</html>
