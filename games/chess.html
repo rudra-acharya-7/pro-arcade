@@ -8,107 +8,130 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 
+
 <style>
 
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+
 body{
+
     margin:0;
     min-height:100vh;
+
     background:#0b1020;
+
     color:white;
+
     font-family:Arial;
+
     display:flex;
     flex-direction:column;
+
     justify-content:center;
     align-items:center;
-    overflow:auto;
+
+    touch-action:none;
 }
+
 
 
 #info{
+
     font-size:22px;
-    margin-bottom:12px;
+
+    margin-bottom:15px;
+
 }
+
 
 
 #board{
 
-    width:min(92vw,500px);
-    height:min(92vw,500px);
+    width:min(90vw,500px);
+
+    height:min(90vw,500px);
 
     display:grid;
+
     grid-template-columns:repeat(8,1fr);
+
+    grid-template-rows:repeat(8,1fr);
 
     border:4px solid #22c55e;
 
-    box-sizing:border-box;
-
-    touch-action:none;
 }
 
 
 
 .square{
 
-    aspect-ratio:1;
+    width:100%;
+    height:100%;
 
     display:flex;
+
     justify-content:center;
+
     align-items:center;
 
-    font-size:clamp(28px,10vw,55px);
+
+    font-size:clamp(25px,9vw,55px);
+
 
     user-select:none;
 
     touch-action:none;
 
-    -webkit-tap-highlight-color:transparent;
 }
 
 
 
 .light{
+
     background:#f1f5f9;
+
     color:#111827;
+
 }
+
 
 
 .dark{
+
     background:#334155;
+
 }
+
 
 
 .selected{
 
-    outline:4px solid #facc15;
+    outline:5px solid #facc15;
 
 }
 
-
-
-.move{
-
-box-shadow:
-inset 0 0 0 5px #22c55e;
-
-}
 
 
 
 button{
 
-margin-top:15px;
+    margin-top:20px;
 
-padding:14px 40px;
+    padding:12px 35px;
 
-background:#22c55e;
+    font-size:20px;
 
-border:none;
+    border:none;
 
-border-radius:12px;
+    border-radius:10px;
 
-color:white;
+    background:#22c55e;
 
-font-size:20px;
+    color:white;
 
 }
 
@@ -116,23 +139,28 @@ font-size:20px;
 
 </style>
 
+
 </head>
 
 
 <body>
 
 
+
 <div id="info">
-Turn: <span id="turn">White</span>
+Turn: White
 </div>
+
 
 
 <div id="board"></div>
 
 
-<button onclick="restart()">
+
+<button id="restart">
 Restart
 </button>
+
 
 
 
@@ -147,12 +175,15 @@ const info =
 document.getElementById("info");
 
 
+const restart =
+document.getElementById("restart");
+
+
+
 let game = new Chess();
 
 
-let selected=null;
-
-let ended=false;
+let selected = null;
 
 
 
@@ -200,6 +231,7 @@ const squares=[
 
 
 
+
 function draw(){
 
 
@@ -210,14 +242,16 @@ board.innerHTML="";
 squares.forEach((sq,i)=>{
 
 
-let div=document.createElement("div");
-
-
-div.className="square ";
+let box =
+document.createElement("div");
 
 
 
-div.className +=
+box.className="square ";
+
+
+
+box.className +=
 
 ((Math.floor(i/8)+i)%2)
 
@@ -231,7 +265,11 @@ div.className +=
 
 
 
-let piece=game.get(sq);
+
+
+let piece =
+game.get(sq);
+
 
 
 
@@ -239,80 +277,57 @@ if(piece){
 
 
 let p =
+
 piece.color=="w"
+
 ?
+
 piece.type.toUpperCase()
+
 :
+
 piece.type;
 
 
-div.innerHTML =
+
+box.textContent =
 pieces[p];
 
-}
-
-
-
-if(selected==sq)
-
-div.classList.add("selected");
-
-
-
-
-if(selected){
-
-
-let moves =
-game.moves({
-
-square:selected,
-
-verbose:true
-
-});
-
-
-
-moves.forEach(m=>{
-
-
-if(m.to==sq)
-
-div.classList.add("move");
-
-
-});
 
 }
 
 
-div.addEventListener("click",function(){
 
-clickSquare(sq);
+
+if(selected==sq){
+
+box.classList.add("selected");
+
+}
+
+
+
+
+box.addEventListener("pointerdown",function(e){
+
+    e.preventDefault();
+
+    play(sq);
+
+});
+
+
+
+
+board.appendChild(box);
+
+
 
 });
 
 
 
-div.addEventListener("touchend",function(e){
-
-e.preventDefault();
-
-clickSquare(sq);
-
-
-},{passive:false});
-
-
-
-board.appendChild(div);
-
-
-});
-
-
-updateInfo();
+update();
 
 
 }
@@ -321,45 +336,7 @@ updateInfo();
 
 
 
-function updateInfo(){
-
-
-if(ended)
-return;
-
-
-
-let text =
-game.turn()=="w"
-?
-"White"
-:
-"Black";
-
-
-
-if(game.isCheck())
-
-text += " ⚠ CHECK";
-
-
-
-info.innerHTML =
-"Turn: "+text;
-
-
-}
-
-
-
-
-
-function clickSquare(sq){
-
-
-
-if(ended)
-return;
+function play(square){
 
 
 
@@ -372,7 +349,7 @@ game.move({
 
 from:selected,
 
-to:sq,
+to:square,
 
 promotion:"q"
 
@@ -380,23 +357,36 @@ promotion:"q"
 
 
 
+
 if(move){
 
-
 selected=null;
-
-checkGame();
-
 
 }
 
 else{
 
 
-selected=sq;
+let piece =
+game.get(square);
+
+
+
+if(piece && piece.color==game.turn()){
+
+selected=square;
+
+}
+
+else{
+
+selected=null;
+
+}
 
 
 }
+
 
 
 draw();
@@ -409,8 +399,9 @@ return;
 
 
 
+
 let piece =
-game.get(sq);
+game.get(square);
 
 
 
@@ -420,26 +411,14 @@ return;
 
 
 
-if(
-game.turn()=="w" &&
-piece.color!="w"
-)
+if(piece.color != game.turn())
 
 return;
 
 
 
-if(
-game.turn()=="b" &&
-piece.color!="b"
-)
+selected=square;
 
-return;
-
-
-
-
-selected=sq;
 
 
 draw();
@@ -452,28 +431,21 @@ draw();
 
 
 
-function checkGame(){
+function update(){
 
 
 
-if(game.isCheckmate()){
+info.textContent =
+
+"Turn: " +
+
+(game.turn()=="w" ? "White" : "Black");
 
 
-ended=true;
 
+if(game.isCheck()){
 
-alert("Checkmate!");
-
-}
-
-
-else if(game.isDraw()){
-
-
-ended=true;
-
-
-alert("Draw");
+info.textContent += " CHECK";
 
 }
 
@@ -484,20 +456,20 @@ alert("Draw");
 
 
 
-function restart(){
+restart.onclick=function(){
 
 
 game.reset();
 
-selected=null;
 
-ended=false;
+selected=null;
 
 
 draw();
 
 
-}
+};
+
 
 
 
@@ -509,4 +481,4 @@ draw();
 
 
 </body>
-</html>
+</html>g
