@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Epic Arcade</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI,sans-serif;
+}
+
+body{
+    background:#121212;
+    color:white;
+    display:flex;
+    min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:240px;
+    background:#18181c;
+    padding:25px;
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    border-right:1px solid #2a2a2a;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:35px;
+}
+
+.nav{
+    padding:14px;
+    margin-bottom:12px;
+    background:#202024;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.nav:hover{
+    background:white;
+    color:black;
+}
+
+/* MAIN */
+
+.main{
+    flex:1;
+    margin-left:240px;
+    padding:30px;
+}
+
+/* TOPBAR */
+
+.topbar{
+    display:flex;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+input,select{
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:#202024;
+    color:white;
+}
+
+input{
+    flex:1;
+}
+
+/* HERO */
+
+.hero{
+    height:450px;
+    border-radius:25px;
+    overflow:hidden;
+    padding:50px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    background:
+    linear-gradient(
+    to right,
+    rgba(0,0,0,.9),
+    rgba(0,0,0,.2)
+    ),
+    url("https://images.unsplash.com/photo-1542751371-adc38448a05e");
+
+    background-size:cover;
+    background-position:center;
+
+    margin-bottom:35px;
+}
+
+.hero h1{
+    font-size:70px;
+    max-width:550px;
+}
+
+.hero p{
+    max-width:500px;
+    margin-top:15px;
+    color:#ddd;
+}
+
+.hero button{
+    width:180px;
+    margin-top:25px;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:white;
+    color:black;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* SECTION */
+
+.section-title{
+    margin:25px 0;
+    font-size:26px;
+}
+
+/* GAMES */
+
+.games{
+    display:grid;
+    grid-template-columns:
+    repeat(auto-fill,minmax(280px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:#18181c;
+    border-radius:15px;
+    overflow:hidden;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+}
+
+.card img{
+    width:100%;
+    height:340px;
+    object-fit:cover;
+}
+
+.card-content{
+    padding:15px;
+}
+
+.tag{
+    display:inline-block;
+    background:#2a2a2a;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+    margin-bottom:10px;
+}
+
+.card h3{
+    margin-bottom:8px;
+}
+
+.card p{
+    color:#bbb;
+    font-size:14px;
+}
+
+.play-btn,
+.fav-btn{
+    width:100%;
+    margin-top:12px;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.play-btn{
+    background:white;
+    color:black;
+}
+
+.fav-btn{
+    background:#333;
+    color:white;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+    body{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        position:relative;
+        width:100%;
+    }
+
+    .main{
+        margin-left:0;
+    }
+
+    .hero h1{
+        font-size:40px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+
+<div class="logo">🎮 EPIC ARCADE</div>
+
+<div class="nav" onclick="showAllGames()">🏠 Home</div>
+<div class="nav" onclick="showTrending()">🔥 Trending</div>
+<div class="nav" onclick="showFavorites()">⭐ Wishlist</div>
+
+</div>
+
+<div class="main">
+
+<div class="topbar">
+
+<input
+type="text"
+id="search"
+placeholder="Search games..."
+>
+
+<select id="category">
+<option value="all">All Categories</option>
+<option value="arcade">Arcade</option>
+<option value="action">Action</option>
+<option value="puzzle">Puzzle</option>
+<option value="board">Board</option>
+</select>
+
+</div>
+
+<div class="hero">
+
+<h1>Play Amazing Games</h1>
+
+<p>
+Discover premium browser games inspired by
+the Epic Games Store experience.
+</p>
+
+<button onclick="showTrending()">
+Explore Now
+</button>
+
+</div>
+
+<h2 class="section-title">
+Featured Games
+</h2>
+
+<section class="games" id="games">
+
+<div class="card" data-category="arcade">
+
+<img src="https://picsum.photos/400/500?1">
+
+<div class="card-content">
+
+<div class="tag">ARCADE</div>
+
+<h3>Snake</h3>
+
+<p>Classic snake adventure.</p>
+
+<button class="play-btn"
+onclick="openGame('Snake')">
+Play Now
+</button>
+
+<button class="fav-btn"
+onclick="toggleFavorite('Snake')">
+Add Wishlist
+</button>
+
+</div>
+</div>
+
+<div class="card" data-category="action">
+
+<img src="https://picsum.photos/400/500?2">
+
+<div class="card-content">
+
+<div class="tag">ACTION</div>
+
+<h3>Space Shooter</h3>
+
+<p>Destroy enemy fleets.</p>
+
+<button class="play-btn"
+onclick="openGame('Space Shooter')">
+Play Now
+</button>
+
+<button class="fav-btn"
+onclick="toggleFavorite('Space Shooter')">
+Add Wishlist
+</button>
+
+</div>
+</div>
+
+<div class="card" data-category="board">
+
+<img src="https://picsum.photos/400/500?3">
+
+<div class="card-content">
+
+<div class="tag">BOARD</div>
+
+<h3>Chess</h3>
+
+<p>Strategic battle of minds.</p>
+
+<button class="play-btn"
+onclick="openGame('Chess')">
+Play Now
+</button>
+
+<button class="fav-btn"
+onclick="toggleFavorite('Chess')">
+Add Wishlist
+</button>
+
+</div>
+</div>
+
+<div class="card" data-category="puzzle">
+
+<img src="https://picsum.photos/400/500?4">
+
+<div class="card-content">
+
+<div class="tag">PUZZLE</div>
+
+<h3>2048</h3>
+
+<p>Combine numbers to win.</p>
+
+<button class="play-btn"
+onclick="openGame('2048')">
+Play Now
+</button>
+
+<button class="fav-btn"
+onclick="toggleFavorite('2048')">
+Add Wishlist
+</button>
+
+</div>
+</div>
+
+<div class="card" data-category="arcade">
+
+<img src="https://picsum.photos/400/500?5">
+
+<div class="card-content">
+
+<div class="tag">ARCADE</div>
+
+<h3>Flappy Bird</h3>
+
+<p>Fly through endless pipes.</p>
+
+<button class="play-btn"
+onclick="openGame('Flappy Bird')">
+Play Now
+</button>
+
+<button class="fav-btn"
+onclick="toggleFavorite('Flappy Bird')">
+Add Wishlist
+</button>
+
+</div>
+</div>
+
+<div class="card" data-category="action">
+
+<img src="https://picsum.photos/400/500?6">
+
+<div class="card-content">
+
+<div class="tag">ACTION</div>
+
+<h3>Breakout</h3>
+
+<p>Break all the bricks.</p>
+
+<button class="play-btn"
+onclick="openGame('Breakout')">
+Play Now
+</button>
+
+<button class="fav-btn"
+onclick="toggleFavorite('Breakout')">
+Add Wishlist
+</button>
+
+</div>
+</div>
+
+</section>
+
+</div>
+
+<script>
+
+/* PLAY */
+
+function openGame(game){
+
+let plays =
+Number(localStorage.getItem(game)||0);
+
+localStorage.setItem(
+game,
+plays+1
+);
+
+alert("Launching " + game);
+
+}
+
+/* SEARCH */
+
+document.getElementById("search")
+.addEventListener("keyup",function(){
+
+let value =
+this.value.toLowerCase();
+
+document
+.querySelectorAll(".card")
+.forEach(card=>{
+
+let text =
+card.querySelector("h3")
+.textContent
+.toLowerCase();
+
+card.style.display=
+text.includes(value)
+?"block"
+:"none";
+
+});
+
+});
+
+/* CATEGORY */
+
+document.getElementById("category")
+.addEventListener("change",function(){
+
+let cat=this.value;
+
+document
+.querySelectorAll(".card")
+.forEach(card=>{
+
+card.style.display=
+cat==="all"||
+card.dataset.category===cat
+?"block"
+:"none";
+
+});
+
+});
+
+/* HOME */
+
+function showAllGames(){
+
+document.getElementById("search").value="";
+document.getElementById("category").value="all";
+
+document
+.querySelectorAll(".card")
+.forEach(card=>{
+
+card.style.display="block";
+
+});
+
+}
+
+/* WISHLIST */
+
+function toggleFavorite(game){
+
+let favs=
+JSON.parse(
+localStorage.getItem("favorites")
+||"[]"
+);
+
+if(favs.includes(game)){
+
+favs=
+favs.filter(
+item=>item!==game
+);
+
+}else{
+
+favs.push(game);
+
+}
+
+localStorage.setItem(
+"favorites",
+JSON.stringify(favs)
+);
+
+updateButtons();
+
+}
+
+function updateButtons(){
+
+let favs=
+JSON.parse(
+localStorage.getItem("favorites")
+||"[]"
+);
+
+document
+.querySelectorAll(".fav-btn")
+.forEach(btn=>{
+
+let game=
+btn.parentElement
+.querySelector("h3")
+.textContent;
+
+btn.textContent=
+favs.includes(game)
+?"Remove Wishlist"
+:"Add Wishlist";
+
+});
+
+}
+
+function showFavorites(){
+
+let favs=
+JSON.parse(
+localStorage.getItem("favorites")
+||"[]"
+);
+
+document
+.querySelectorAll(".card")
+.forEach(card=>{
+
+let game=
+card.querySelector("h3")
+.textContent;
+
+card.style.display=
+favs.includes(game)
+?"block"
+:"none";
+
+});
+
+}
+
+/* TRENDING */
+
+function showTrending(){
+
+let found=false;
+
+document
+.querySelectorAll(".card")
+.forEach(card=>{
+
+let game=
+card.querySelector("h3")
+.textContent;
+
+let plays=
+Number(
+localStorage.getItem(game)||0
+);
+
+if(plays>0){
+
+card.style.display="block";
+found=true;
+
+}else{
+
+card.style.display="none";
+
+}
+
+});
+
+if(!found){
+
+alert(
+"Play some games first to create trending games."
+);
+
+}
+
+}
+
+updateButtons();
+
+</script>
+
+</body>
+</html>
